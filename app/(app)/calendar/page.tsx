@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { db } from "@/lib/db";
@@ -13,14 +13,28 @@ import {
   MONTH_NAMES_HE,
 } from "@/lib/calculations";
 
+type ClockState = "idle" | "clocked-in" | "clocked-out" | "reviewed";
+
+function nowTime() {
+  const n = new Date();
+  return `${String(n.getHours()).padStart(2, "0")}:${String(n.getMinutes()).padStart(2, "0")}`;
+}
+
 export default function CalendarPage() {
   const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
   const [viewMode, setViewMode] = useState<"week" | "month">("month");
   const [currentDate, setCurrentDate] = useState(today);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+
+  // Clock in/out
+  const [clockState, setClockState] = useState<ClockState>("idle");
+  const [todayClockIn, setTodayClockIn] = useState("");
+  const [todayClockOut, setTodayClockOut] = useState("");
 
   useEffect(() => {
     db.jobs.toArray().then((j) => {
@@ -29,27 +43,68 @@ export default function CalendarPage() {
     });
   }, []);
 
+  // Restore clock state from localStorage (resets each new day via date key)
+  useEffect(() => {
+    const state = localStorage.getItem(`clockState_${todayStr}`) as ClockState | null;
+    if (state) setClockState(state);
+    const ci = localStorage.getItem(`clockIn_${todayStr}`);
+    if (ci) setTodayClockIn(ci);
+    const co = localStorage.getItem(`clockOut_${todayStr}`);
+    if (co) setTodayClockOut(co);
+  }, [todayStr]);
+
+  const loadShifts = useCallback(async (job: Job, date: Date) => {
+    const prefix = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    const data = await db.shifts
+      .where("jobId").equals(job.id)
+      .and((s) => s.date.startsWith(prefix))
+      .toArray();
+    setShifts(data);
+  }, []);
+
   useEffect(() => {
     if (!selectedJob) return;
-    // Load shifts for visible month range
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
-    const prefix = `${year}-${String(month).padStart(2, "0")}`;
-    db.shifts
-      .where("jobId")
-      .equals(selectedJob.id)
-      .and((s) => s.date.startsWith(prefix))
-      .toArray()
-      .then(setShifts);
-  }, [selectedJob, currentDate]);
+    loadShifts(selectedJob, currentDate);
+  }, [selectedJob, currentDate, loadShifts]);
 
   const shiftMap = Object.fromEntries(shifts.map((s) => [s.date, s]));
+
+  // Clock In
+  const handleClockIn = async () => {
+    if (!selectedJob) return;
+    const time = nowTime();
+    const existing = shiftMap[todayStr];
+    const shift = existing
+      ? { ...existing, isWorkDay: true, clockIn: time }
+      : defaultShift(todayStr, selectedJob.id, { clockIn: time });
+    await db.shifts.put(shift);
+    setTodayClockIn(time);
+    setClockState("clocked-in");
+    localStorage.setItem(`clockState_${todayStr}`, "clocked-in");
+    localStorage.setItem(`clockIn_${todayStr}`, time);
+    await loadShifts(selectedJob, currentDate);
+  };
+
+  // Clock Out
+  const handleClockOut = async () => {
+    if (!selectedJob) return;
+    const time = nowTime();
+    const existing = shiftMap[todayStr];
+    if (existing) {
+      await db.shifts.put({ ...existing, clockOut: time });
+    }
+    setTodayClockOut(time);
+    setClockState("clocked-out");
+    localStorage.setItem(`clockState_${todayStr}`, "clocked-out");
+    localStorage.setItem(`clockOut_${todayStr}`, time);
+    await loadShifts(selectedJob, currentDate);
+  };
 
   const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
 
   const getWeekDays = () => {
     const startOfWeek = new Date(currentDate);
-    const day = startOfWeek.getDay(); // 0=Sun
+    const day = startOfWeek.getDay();
     startOfWeek.setDate(startOfWeek.getDate() - day);
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(startOfWeek);
@@ -73,7 +128,7 @@ export default function CalendarPage() {
   const formatDate = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-  const isToday = (d: Date) => formatDate(d) === formatDate(today);
+  const isToday = (d: Date) => formatDate(d) === todayStr;
 
   const navigate = (dir: -1 | 1) => {
     const d = new Date(currentDate);
@@ -95,20 +150,33 @@ export default function CalendarPage() {
     } else {
       await db.shifts.put(shift);
     }
-    // Refresh
-    const prefix = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`;
-    const updated = await db.shifts
-      .where("jobId").equals(selectedJob.id)
-      .and((s) => s.date.startsWith(prefix))
-      .toArray();
-    setShifts(updated);
+    await loadShifts(selectedJob, currentDate);
     setSelectedDate(null);
-  }, [selectedJob, shiftMap, currentDate]);
+    // If saving today after clocking out, mark as reviewed
+    if (shift.date === todayStr) {
+      const cur = localStorage.getItem(`clockState_${todayStr}`);
+      if (cur === "clocked-out") {
+        setClockState("reviewed");
+        localStorage.setItem(`clockState_${todayStr}`, "reviewed");
+      }
+    }
+  }, [selectedJob, shiftMap, currentDate, loadShifts, todayStr]);
 
   const handleDelete = useCallback(async (shiftId: string) => {
+    const shift = shifts.find((s) => s.id === shiftId);
     await db.shifts.delete(shiftId);
     setShifts((prev) => prev.filter((s) => s.id !== shiftId));
-  }, []);
+    // If deleting today's shift, reset clock state
+    if (shift?.date === todayStr) {
+      setClockState("idle");
+      setTodayClockIn("");
+      setTodayClockOut("");
+      localStorage.removeItem(`clockState_${todayStr}`);
+      localStorage.removeItem(`clockIn_${todayStr}`);
+      localStorage.removeItem(`clockOut_${todayStr}`);
+    }
+    setSelectedDate(null);
+  }, [shifts, todayStr]);
 
   const headerLabel =
     viewMode === "month"
@@ -142,18 +210,10 @@ export default function CalendarPage() {
           ${!todayDay && !isWorkedDay && (isSat || isFri) ? "bg-orange-50/50" : ""}
         `}
       >
-        <span
-          className={`text-xs font-semibold ${
-            todayDay ? "text-blue-600" : isSat ? "text-orange-500" : "text-gray-500"
-          }`}
-        >
+        <span className={`text-xs font-semibold ${todayDay ? "text-blue-600" : isSat ? "text-orange-500" : "text-gray-500"}`}>
           {DAY_ABBR_HE[date.getDay()]}
         </span>
-        <span
-          className={`font-bold ${compact ? "text-sm" : "text-base"} ${
-            todayDay ? "text-blue-600" : "text-gray-800"
-          }`}
-        >
+        <span className={`font-bold ${compact ? "text-sm" : "text-base"} ${todayDay ? "text-blue-600" : "text-gray-800"}`}>
           {date.getDate()}
         </span>
         {shift?.isWorkDay && (
@@ -205,15 +265,11 @@ export default function CalendarPage() {
           </div>
           <div className="flex items-center gap-1 flex-1 justify-center">
             <button onClick={() => navigate(-1)} className="p-1 text-gray-500 hover:text-gray-800">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                <path d="m9 18 6-6-6-6" />
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path d="m9 18 6-6-6-6" /></svg>
             </button>
             <span className="text-sm font-medium text-gray-700 min-w-[160px] text-center">{headerLabel}</span>
             <button onClick={() => navigate(1)} className="p-1 text-gray-500 hover:text-gray-800">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                <path d="m15 18-6-6 6-6" />
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path d="m15 18-6-6 6-6" /></svg>
             </button>
           </div>
         </div>
@@ -242,8 +298,7 @@ export default function CalendarPage() {
       )}
 
       {jobs.length > 0 && viewMode === "month" && (
-        <div className="p-4">
-          {/* Day headers */}
+        <div className="p-4 pb-2">
           <div className="grid grid-cols-7 gap-1 mb-1">
             {DAY_ABBR_HE.map((abbr) => (
               <div key={abbr} className="text-center text-xs text-gray-400 font-medium py-1">
@@ -253,13 +308,68 @@ export default function CalendarPage() {
           </div>
           <div className="grid grid-cols-7 gap-1">
             {getMonthDays().map((d, i) =>
-              d ? (
-                <DayCell key={i} date={d} compact />
-              ) : (
-                <div key={i} />
-              )
+              d ? <DayCell key={i} date={d} compact /> : <div key={i} />
             )}
           </div>
+        </div>
+      )}
+
+      {/* Clock In / Out Bar */}
+      {jobs.length > 0 && (
+        <div className="sticky bottom-16 z-20 bg-white border-t border-gray-100 px-4 py-3">
+          {clockState === "idle" && (
+            <button
+              onClick={handleClockIn}
+              className="w-full py-3.5 bg-green-500 hover:bg-green-600 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-5 h-5">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              כניסה לעבודה
+            </button>
+          )}
+
+          {clockState === "clocked-in" && (
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <div className="text-xs text-gray-400">נכנסת בשעה</div>
+                <div className="text-xl font-bold text-gray-900">{todayClockIn}</div>
+              </div>
+              <button
+                onClick={handleClockOut}
+                className="flex-1 py-3.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-5 h-5">
+                  <rect x="4" y="4" width="16" height="16" rx="2" />
+                </svg>
+                יציאה
+              </button>
+            </div>
+          )}
+
+          {(clockState === "clocked-out" || clockState === "reviewed") && (
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <div className="text-xs text-gray-400">היום</div>
+                <div className="text-base font-bold text-gray-900">{todayClockIn} → {todayClockOut}</div>
+              </div>
+              <button
+                onClick={() => setSelectedDate(todayStr)}
+                className={`flex-1 py-3.5 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors ${
+                  clockState === "reviewed"
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-amber-500 hover:bg-amber-600"
+                }`}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-5 h-5">
+                  <path d="M9 11l3 3L22 4" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+                בדיקת יום
+              </button>
+            </div>
+          )}
         </div>
       )}
 

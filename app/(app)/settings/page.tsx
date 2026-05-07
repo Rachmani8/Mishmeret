@@ -22,7 +22,7 @@ const jobFields: Field[] = [
   { key: "overtime1Multiplier", label: "שעות נוספות 1-2 (פקטור)", type: "number", step: 0.05, hint: "ברירת מחדל: 1.25" },
   { key: "overtime2Multiplier", label: "שעות נוספות 3+ (פקטור)", type: "number", step: 0.05, hint: "ברירת מחדל: 1.5" },
   { key: "commuteEnabled", label: "נסיעות", type: "toggle" },
-  { key: "commuteDaily", label: "נסיעות יומיות (₪)", type: "number", step: 1, hint: "ברירת מחדל: ₪30 ליום" },
+  { key: "commuteDaily", label: "נסיעות יומיות (₪)", type: "number", step: 0.1, hint: "ברירת מחדל: ₪22.60 ליום" },
   { key: "taxCreditPoints", label: "נקודות זיכוי", type: "number", step: 0.25, hint: "ברירת מחדל: 2.25 לתושב ישראל רווק" },
   { key: "pensionEnabled", label: "פנסיה", type: "toggle" },
   { key: "pensionEmployeePercent", label: "הפרשת עובד לפנסיה (%)", type: "percent", hint: "ברירת מחדל: 6%" },
@@ -202,7 +202,7 @@ export default function SettingsPage() {
               syncStatus === "ok"
                 ? "bg-green-600 text-white"
                 : syncStatus === "error"
-                ? "bg-red-500-light0 text-white"
+                ? "bg-red-500 text-white"
                 : "bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
             }`}
           >
@@ -253,6 +253,7 @@ export default function SettingsPage() {
           </svg>
           הוסף משרה
         </button>
+
       </div>
     </div>
   );

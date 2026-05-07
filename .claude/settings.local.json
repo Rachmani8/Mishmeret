@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell($env:Path += \";C:\\\\Program Files\\\\nodejs\"; Set-Location \"C:\\\\Users\\\\rachm\\\\Desktop\\\\Claude_Folder\\\\Mishmeret\"; & \"C:\\\\Program Files\\\\nodejs\\\\node.exe\" \"C:\\\\Program Files\\\\nodejs\\\\node_modules\\\\npm\\\\bin\\\\npm-cli.js\" install dexie next-pwa xlsx 2>&1)"
+      "PowerShell($env:Path += \";C:\\\\Program Files\\\\nodejs\"; Set-Location \"C:\\\\Users\\\\rachm\\\\Desktop\\\\Claude_Folder\\\\Mishmeret\"; & \"C:\\\\Program Files\\\\nodejs\\\\node.exe\" \"C:\\\\Program Files\\\\nodejs\\\\node_modules\\\\npm\\\\bin\\\\npm-cli.js\" install dexie next-pwa xlsx 2>&1)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }

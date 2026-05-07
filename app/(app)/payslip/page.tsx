@@ -46,7 +46,11 @@ function Row({
 }) {
   const actualNum = parseFloat(actual);
   const diff = !isNaN(actualNum) ? actualNum - calculated : null;
-  const hasDiscrepancy = diff !== null && Math.abs(diff) > 1;
+  const hasDiscrepancy = diff !== null && Math.abs(diff) >= 1;
+  // walletImpact: positive = good for user, negative = bad for user
+  // For deductions: paying more than expected is bad → flip sign
+  const walletImpact = diff !== null ? (isNegative ? -diff : diff) : null;
+  const isGood = walletImpact !== null && walletImpact > 0;
 
   return (
     <div className={`flex items-center gap-2 py-2.5 border-b border-gray-50 last:border-0 ${bold ? "border-t border-gray-200 mt-1 pt-3" : ""}`}>
@@ -62,13 +66,13 @@ function Row({
           onChange={(e) => onChange(e.target.value)}
           className={`w-full text-sm px-2 py-1 border rounded-lg text-center focus:outline-none focus:ring-2 ${
             hasDiscrepancy
-              ? diff! > 0 ? "border-green-500 ring-green-500/20 bg-green-50 text-green-600" : "border-red-500 ring-red-500/20 bg-red-50 text-red-500"
+              ? isGood ? "border-green-500 ring-green-500/20 bg-green-50 text-green-600" : "border-red-500 ring-red-500/20 bg-red-50 text-red-500"
               : "border-gray-200 focus:ring-blue-500"
           }`}
         />
         {hasDiscrepancy && (
-          <span className={`absolute -top-4 right-0 text-[10px] font-medium ${diff! > 0 ? "text-green-600" : "text-red-500"}`}>
-            {diff! > 0 ? "+" : ""}{diff!.toFixed(0)}₪
+          <span className={`absolute -top-4 right-0 text-[10px] font-medium ${isGood ? "text-green-600" : "text-red-500"}`}>
+            {walletImpact! > 0 ? "+" : ""}{walletImpact!.toFixed(0)}₪
           </span>
         )}
       </div>

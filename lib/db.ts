@@ -80,7 +80,7 @@ export function defaultJob(partial?: Partial<Job>): Job {
     overtime2Multiplier: 1.5,
     dailyNormHours: 8.6,
     commuteEnabled: true,
-    commuteDaily: 30,
+    commuteDaily: 22.6,
     taxCreditPoints: 2.25,
     pensionEnabled: true,
     pensionEmployeePercent: 6,
