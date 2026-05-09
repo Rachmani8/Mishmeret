@@ -217,6 +217,11 @@ export default function CalendarPage() {
         <span className={`text-xs font-semibold ${todayDay ? "text-blue-600" : isSat ? "text-orange-500" : isHoliday ? "text-purple-600" : "text-gray-500"}`}>
           {DAY_ABBR_HE[date.getDay()]}
         </span>
+        {isHoliday && (
+          <span className="text-[9px] font-medium text-purple-600 leading-tight text-center w-full truncate px-0.5">
+            {holidays[key]}
+          </span>
+        )}
         <span className={`font-bold ${compact ? "text-sm" : "text-base"} ${todayDay ? "text-blue-600" : "text-gray-800"}`}>
           {date.getDate()}
         </span>

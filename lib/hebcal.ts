@@ -103,7 +103,7 @@ export async function fetchHolidayDatesAndCache(
   for (const item of data.items ?? []) {
     if (item.category === "holiday" && item.yomtov === true) {
       const datePart = (item.date as string).substring(0, 10);
-      dates[datePart] = (item.titleHebrew as string | undefined) ?? (item.title as string);
+      dates[datePart] = (item.hebrew as string | undefined) ?? (item.title as string);
     }
   }
 
