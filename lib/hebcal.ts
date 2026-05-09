@@ -38,9 +38,11 @@ export async function fetchAndCache(
   cityId: number
 ): Promise<Record<string, number>> {
   const cacheKey = `${year}-${cityId}`;
+  // maj=on so HebCal also returns candle-lighting times for holiday eves (erev chag),
+  // which land in `times` via the same category:"candles" filter below.
   const url =
     `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}` +
-    `&maj=off&min=off&nx=off&mf=off&ss=off&mod=off` +
+    `&maj=on&min=off&nx=off&mf=off&ss=off&mod=off` +
     `&s=on&c=on&geo=geonameid&geonameid=${cityId}&M=on`;
 
   const res = await fetch(url);
@@ -51,12 +53,9 @@ export async function fetchAndCache(
   for (const item of data.items ?? []) {
     if (item.category === "candles") {
       // item.date is like "2025-04-11T19:27:00+03:00"
-      const dt = new Date(item.date);
-      // Use local Israel time — HebCal returns times in the city's local timezone
       // We parse hour/minute from the ISO string directly to avoid JS timezone conversion
       const timePart = item.date.substring(11, 16); // "HH:MM"
       const [h, m] = timePart.split(":").map(Number);
-      // The date of candle lighting is always a Friday — use the date part
       const datePart = item.date.substring(0, 10); // "YYYY-MM-DD"
       times[datePart] = h * 60 + m;
     }
@@ -71,6 +70,45 @@ export async function fetchAndCache(
   });
 
   return times;
+}
+
+// Returns full Yom Tov days for a year: { "YYYY-MM-DD": "שם החג בעברית" }
+// Hol HaMoed is excluded — HebCal marks those with yomtov: false.
+export async function getHolidayDates(
+  year: number,
+  cityId: number
+): Promise<Record<string, string>> {
+  const cacheKey = `${year}-${cityId}`;
+  const cached = await db.holidays.get(cacheKey);
+  if (cached) return cached.dates;
+
+  return fetchHolidayDatesAndCache(year, cityId);
+}
+
+export async function fetchHolidayDatesAndCache(
+  year: number,
+  cityId: number
+): Promise<Record<string, string>> {
+  const cacheKey = `${year}-${cityId}`;
+  const url =
+    `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}` +
+    `&maj=on&min=off&nx=off&mf=off&ss=off&mod=off` +
+    `&s=off&c=off&geo=geonameid&geonameid=${cityId}&M=on`;
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HebCal holiday fetch failed: ${res.status}`);
+  const data = await res.json();
+
+  const dates: Record<string, string> = {};
+  for (const item of data.items ?? []) {
+    if (item.category === "holiday" && item.yomtov === true) {
+      const datePart = (item.date as string).substring(0, 10);
+      dates[datePart] = (item.titleHebrew as string | undefined) ?? (item.title as string);
+    }
+  }
+
+  await db.holidays.put({ id: cacheKey, year, cityId, dates, fetchedAt: Date.now() });
+  return dates;
 }
 
 // Get or load app settings, defaulting to Tel Aviv

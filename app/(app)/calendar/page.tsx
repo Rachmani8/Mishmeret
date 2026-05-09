@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import type { Job, Shift } from "@/lib/db";
 import { defaultShift } from "@/lib/db";
 import ShiftDrawer from "@/components/ShiftDrawer";
+import { useHolidayTimes } from "@/lib/useHolidayTimes";
 import {
   SHIFT_TYPE_COLORS,
   SHIFT_TYPE_LABELS,
@@ -26,6 +27,7 @@ export default function CalendarPage() {
 
   const [viewMode, setViewMode] = useState<"week" | "month">("month");
   const [currentDate, setCurrentDate] = useState(today);
+  const holidays = useHolidayTimes(currentDate.getFullYear());
   const [jobs, setJobs] = useState<Job[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -199,6 +201,7 @@ export default function CalendarPage() {
     const isWorkedDay = isPast && shift?.isWorkDay;
     const isSat = date.getDay() === 6;
     const isFri = date.getDay() === 5;
+    const isHoliday = !isSat && !!holidays[key];
 
     return (
       <button
@@ -208,9 +211,10 @@ export default function CalendarPage() {
           ${compact ? "p-1 gap-0.5 min-h-[56px]" : "p-2 gap-1 min-h-[72px]"}
           ${todayDay ? "border-blue-500 bg-blue-50" : isWorkedDay ? "border-green-200 bg-green-50" : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50"}
           ${!todayDay && !isWorkedDay && (isSat || isFri) ? "bg-orange-50/50" : ""}
+          ${!todayDay && !isWorkedDay && isHoliday ? "bg-purple-50/60" : ""}
         `}
       >
-        <span className={`text-xs font-semibold ${todayDay ? "text-blue-600" : isSat ? "text-orange-500" : "text-gray-500"}`}>
+        <span className={`text-xs font-semibold ${todayDay ? "text-blue-600" : isSat ? "text-orange-500" : isHoliday ? "text-purple-600" : "text-gray-500"}`}>
           {DAY_ABBR_HE[date.getDay()]}
         </span>
         <span className={`font-bold ${compact ? "text-sm" : "text-base"} ${todayDay ? "text-blue-600" : "text-gray-800"}`}>

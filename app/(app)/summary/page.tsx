@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { db } from "@/lib/db";
 import type { Job, Shift } from "@/lib/db";
 import { useShabbatTimes } from "@/lib/useShabbatTimes";
+import { useHolidayTimes } from "@/lib/useHolidayTimes";
 import {
   calcDayEarnings,
   calcWorkedHours,
@@ -23,6 +24,7 @@ export default function SummaryPage() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const shabbatTimes = useShabbatTimes(year);
+  const holidays = useHolidayTimes(year);
 
   useEffect(() => {
     db.jobs.toArray().then((j) => {
@@ -54,7 +56,7 @@ export default function SummaryPage() {
 
   const totalHours = workShifts.reduce((sum, s) => sum + calcWorkedHours(s), 0);
   const totalGross = selectedJob
-    ? workShifts.reduce((sum, s) => sum + calcDayEarnings(s, selectedJob, shabbatTimes).totalGross, 0)
+    ? workShifts.reduce((sum, s) => sum + calcDayEarnings(s, selectedJob, shabbatTimes, holidays).totalGross, 0)
     : 0;
   const totalCommute = selectedJob && selectedJob.commuteEnabled
     ? workShifts.length * selectedJob.commuteDaily

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { db, defaultJob } from "@/lib/db";
 import type { Job } from "@/lib/db";
-import { ISRAELI_CITIES, getAppSettings, saveAppSettings, fetchAndCache } from "@/lib/hebcal";
+import { ISRAELI_CITIES, getAppSettings, saveAppSettings, fetchAndCache, fetchHolidayDatesAndCache } from "@/lib/hebcal";
 
 type Field = {
   key: keyof Job;
@@ -136,9 +136,12 @@ export default function SettingsPage() {
     setSyncStatus("loading");
     try {
       const year = new Date().getFullYear();
-      await fetchAndCache(year, cityId);
-      // Also fetch next year proactively
-      await fetchAndCache(year + 1, cityId);
+      await Promise.all([
+        fetchAndCache(year, cityId),
+        fetchAndCache(year + 1, cityId),
+        fetchHolidayDatesAndCache(year, cityId),
+        fetchHolidayDatesAndCache(year + 1, cityId),
+      ]);
       setSyncStatus("ok");
       setTimeout(() => setSyncStatus("idle"), 3000);
     } catch {
@@ -206,10 +209,10 @@ export default function SettingsPage() {
                 : "bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
             }`}
           >
-            {syncStatus === "loading" && "מוריד זמני שבת..."}
-            {syncStatus === "ok" && "✓ זמני שבת עודכנו!"}
+            {syncStatus === "loading" && "מוריד זמני שבת וחגים..."}
+            {syncStatus === "ok" && "✓ שבתות וחגים עודכנו!"}
             {syncStatus === "error" && "שגיאה — נסה שוב"}
-            {syncStatus === "idle" && "סנכרן זמני שבת לשנה הנוכחית"}
+            {syncStatus === "idle" && "סנכרן שבתות וחגים לשנה הנוכחית"}
           </button>
           <p className="text-xs text-gray-400">
             זמני הכנסת שבת מדויקים לפי עיר — מחושב דרך HebCal. מספיק לסנכרן פעם בשנה.

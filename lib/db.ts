@@ -39,6 +39,15 @@ export interface ShabbatCache {
   fetchedAt: number;
 }
 
+// Holiday dates per year+city — only full Yom Tov days (no Hol HaMoed)
+export interface HolidayCache {
+  id: string;          // "YYYY-cityId" e.g. "2025-293397"
+  year: number;
+  cityId: number;
+  dates: Record<string, string>;  // "YYYY-MM-DD" → Hebrew holiday name
+  fetchedAt: number;
+}
+
 // Global app settings (single record with id "singleton")
 export interface AppSettings {
   id: string;
@@ -50,6 +59,7 @@ class MishmeretDB extends Dexie {
   jobs!: Table<Job, string>;
   shifts!: Table<Shift, string>;
   shabbatCache!: Table<ShabbatCache, string>;
+  holidays!: Table<HolidayCache, string>;
   appSettings!: Table<AppSettings, string>;
 
   constructor() {
@@ -62,6 +72,13 @@ class MishmeretDB extends Dexie {
       jobs: "id, name",
       shifts: "id, jobId, date",
       shabbatCache: "id, year, cityId",
+      appSettings: "id",
+    });
+    this.version(3).stores({
+      jobs: "id, name",
+      shifts: "id, jobId, date",
+      shabbatCache: "id, year, cityId",
+      holidays: "id, year, cityId",
       appSettings: "id",
     });
   }

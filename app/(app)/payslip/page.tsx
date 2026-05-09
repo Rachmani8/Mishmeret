@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { db } from "@/lib/db";
 import type { Job, Shift } from "@/lib/db";
 import { useShabbatTimes } from "@/lib/useShabbatTimes";
+import { useHolidayTimes } from "@/lib/useHolidayTimes";
 import {
   calcMonthlyPayslip,
   formatCurrency,
@@ -90,6 +91,7 @@ export default function PayslipPage() {
   const [payslip, setPayslip] = useState<MonthlyPayslip | null>(null);
   const [totalTips, setTotalTips] = useState(0);
   const shabbatTimes = useShabbatTimes(year);
+  const holidays = useHolidayTimes(year);
   const [actual, setActual] = useState<ActualValues>(emptyActual());
   const [showValidator, setShowValidator] = useState(false);
 
@@ -109,10 +111,14 @@ export default function PayslipPage() {
       .toArray()
       .then((s) => {
         setShifts(s);
-        setPayslip(calcMonthlyPayslip(s, selectedJob, shabbatTimes));
         setTotalTips(s.filter(x => x.isWorkDay).reduce((sum, x) => sum + (x.tips ?? 0), 0));
       });
   }, [selectedJob, year, month]);
+
+  useEffect(() => {
+    if (!selectedJob) return;
+    setPayslip(calcMonthlyPayslip(shifts, selectedJob, shabbatTimes, holidays));
+  }, [shifts, selectedJob, shabbatTimes, holidays]);
 
   const navigate = (dir: -1 | 1) => {
     let m = month + dir;
