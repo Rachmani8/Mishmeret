@@ -162,7 +162,7 @@ export default function SettingsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("למחוק את המשרה ואת כל המשמרות שלה?")) return;
+    if (!confirm("למחוק את המשרה וכל המשמרות שלה?")) return;
     await db.jobs.delete(id);
     await db.shifts.where("jobId").equals(id).delete();
     const remaining = jobs.filter((j) => j.id !== id);
@@ -179,6 +179,35 @@ export default function SettingsPage() {
       </div>
 
       <div className="p-4 space-y-4">
+
+        {/* Add job button — only when no job exists */}
+        {jobs.length === 0 && (
+          <button
+            onClick={addJob}
+            className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            הוסף משרה
+          </button>
+        )}
+
+        {jobs.map((job) => (
+          <div key={job.id}>
+            {/* Job accordion header */}
+            <button
+              onClick={() => setExpandedId(expandedId === job.id ? null : job.id)}
+              className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 rounded-2xl mb-2 hover:bg-gray-100 transition-colors"
+            >
+              <span className="font-semibold text-gray-800">{job.name}</span>
+              <span className="text-xs text-gray-400 font-medium">₪{job.baseHourlyRate}/שעה</span>
+            </button>
+            {expandedId === job.id && (
+              <JobForm job={job} onSave={handleSave} onDelete={handleDelete} />
+            )}
+          </div>
+        ))}
 
         {/* Shabbat city settings */}
         <div className="bg-white border border-gray-100 rounded-2xl px-4 py-3 space-y-3">
@@ -218,44 +247,6 @@ export default function SettingsPage() {
             זמני הכנסת שבת מדויקים לפי עיר — מחושב דרך HebCal. מספיק לסנכרן פעם בשנה.
           </p>
         </div>
-
-        {jobs.length === 0 && (
-          <div className="text-center py-12 text-gray-500 text-sm">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-8 h-8 text-gray-400">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            </div>
-            <p>לא הוגדרה משרה עדיין</p>
-          </div>
-        )}
-
-        {jobs.map((job) => (
-          <div key={job.id}>
-            {/* Job accordion header */}
-            <button
-              onClick={() => setExpandedId(expandedId === job.id ? null : job.id)}
-              className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 rounded-2xl mb-2 hover:bg-gray-100 transition-colors"
-            >
-              <span className="font-semibold text-gray-800">{job.name}</span>
-              <span className="text-xs text-gray-400 font-medium">₪{job.baseHourlyRate}/שעה</span>
-            </button>
-            {expandedId === job.id && (
-              <JobForm job={job} onSave={handleSave} onDelete={handleDelete} />
-            )}
-          </div>
-        ))}
-
-        {/* Add job button */}
-        <button
-          onClick={addJob}
-          className="w-full py-3 border-2 border-dashed border-gray-200 rounded-2xl text-sm font-medium text-gray-500 hover:border-blue-300 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          הוסף משרה
-        </button>
 
       </div>
     </div>

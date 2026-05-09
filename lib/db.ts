@@ -25,7 +25,6 @@ export interface Shift {
   shiftType: "morning" | "afternoon" | "evening" | "general";
   clockIn: string;                 // "HH:MM"
   clockOut: string;                // "HH:MM"
-  breakMinutes: number;
   tips: number;                    // cash tips, not included in gross
   notes: string;
 }
@@ -115,7 +114,6 @@ export function defaultShift(date: string, jobId: string, partial?: Partial<Shif
     shiftType: "morning",
     clockIn: "09:00",
     clockOut: "17:00",
-    breakMinutes: 30,
     tips: 0,
     notes: "",
     ...partial,

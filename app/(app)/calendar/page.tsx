@@ -57,12 +57,18 @@ export default function CalendarPage() {
 
   const loadShifts = useCallback(async (job: Job, date: Date) => {
     const prefix = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const data = await db.shifts
-      .where("jobId").equals(job.id)
-      .and((s) => s.date.startsWith(prefix))
-      .toArray();
+    const data = await db.shifts.where("jobId").equals(job.id).and((s) => s.date.startsWith(prefix)).toArray();
     setShifts(data);
-  }, []);
+    // Clear stale clock state if no shift exists for today under this job
+    if (prefix === todayStr.substring(0, 7) && !data.some((s) => s.date === todayStr)) {
+      setClockState("idle");
+      setTodayClockIn("");
+      setTodayClockOut("");
+      localStorage.removeItem(`clockState_${todayStr}`);
+      localStorage.removeItem(`clockIn_${todayStr}`);
+      localStorage.removeItem(`clockOut_${todayStr}`);
+    }
+  }, [todayStr]);
 
   useEffect(() => {
     if (!selectedJob) return;
@@ -140,7 +146,7 @@ export default function CalendarPage() {
   };
 
   const openDay = (d: Date) => {
-    if (!selectedJob) return;
+    if (!selectedJob) return; // no job → calendar is read-only
     setSelectedDate(formatDate(d));
   };
 
@@ -289,21 +295,16 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* No job configured message */}
+      {/* No job banner */}
       {jobs.length === 0 && (
-        <div className="flex-1 flex flex-col items-center justify-center text-center px-8 gap-3">
-          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-8 h-8 text-gray-400">
-              <rect x="3" y="4" width="18" height="18" rx="2" />
-              <path d="M16 2v4M8 2v4M3 10h18" />
-            </svg>
-          </div>
-          <p className="text-gray-500 text-sm">כדי להתחיל, הגדר משרה בלשונית <strong>הגדרות</strong></p>
+        <div className="mx-4 mt-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between gap-3">
+          <p className="text-sm text-amber-800">לא הוגדרה משרה — לא ניתן לפתוח ימים</p>
+          <a href="/settings" className="text-xs font-semibold text-amber-700 underline whitespace-nowrap">הגדר משרה</a>
         </div>
       )}
 
       {/* Calendar grid */}
-      {jobs.length > 0 && viewMode === "week" && (
+      {viewMode === "week" && (
         <div className="p-4 grid grid-cols-7 gap-1.5">
           {getWeekDays().map((d, i) => (
             <DayCell key={i} date={d} />
@@ -311,7 +312,7 @@ export default function CalendarPage() {
         </div>
       )}
 
-      {jobs.length > 0 && viewMode === "month" && (
+      {viewMode === "month" && (
         <div className="p-4 pb-2">
           <div className="grid grid-cols-7 gap-1 mb-1">
             {DAY_ABBR_HE.map((abbr) => (

@@ -44,7 +44,7 @@ export function calcWorkedHours(shift: Shift): number {
   const start = timeToMinutes(shift.clockIn);
   let end = timeToMinutes(shift.clockOut);
   if (end <= start) end += 24 * 60; // overnight shift
-  const worked = (end - start - shift.breakMinutes) / 60;
+  const worked = (end - start) / 60;
   return Math.max(0, worked);
 }
 

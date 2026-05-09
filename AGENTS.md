@@ -68,7 +68,7 @@ All pages are `"use client"` components. The root (`app/page.tsx`) immediately r
 Holds all wage parameters: `baseHourlyRate`, overtime multipliers, `dailyNormHours`, `weekendMultiplier`, `holidayMultiplier`, commute settings, tax credit points, pension settings.
 
 ### `Shift`
-One record per calendar day: `date` (ISO `YYYY-MM-DD`), `jobId`, `isWorkDay`, `shiftType` (`morning|afternoon|evening|general`), `clockIn`/`clockOut` (HH:MM), `breakMinutes`, `tips`, `notes`.
+One record per calendar day: `date` (ISO `YYYY-MM-DD`), `jobId`, `isWorkDay`, `shiftType` (`morning|afternoon|evening|general`), `clockIn`/`clockOut` (HH:MM), `tips`, `notes`.
 
 ---
 
