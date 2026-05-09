@@ -107,6 +107,20 @@ export async function fetchHolidayDatesAndCache(
     }
   }
 
+  // Number multi-day holidays (e.g. Rosh Hashana): strip known day-2 suffixes,
+  // group by base name, then relabel chronologically as "X 1", "X 2".
+  const baseToEntries: Record<string, string[]> = {};
+  for (const [date, name] of Object.entries(dates)) {
+    const base = name.replace(/ ב['׳]$/, "").replace(/ II$/i, "").trim();
+    (baseToEntries[base] ??= []).push(date);
+  }
+  for (const [base, list] of Object.entries(baseToEntries)) {
+    if (list.length > 1) {
+      list.sort();
+      list.forEach((d, i) => { dates[d] = `${base} ${i + 1}`; });
+    }
+  }
+
   await db.holidays.put({ id: cacheKey, year, cityId, dates, fetchedAt: Date.now() });
   return dates;
 }
