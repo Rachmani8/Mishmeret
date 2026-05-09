@@ -1,44 +1,27 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { db } from "@/lib/db";
-import type { Job, Shift } from "@/lib/db";
+import type { Job } from "@/lib/db";
 import {
   calcDayEarnings,
   calcWorkedHours,
-  formatCurrency,
   MONTH_NAMES_HE,
   DAY_NAMES_HE,
-  SHIFT_TYPE_LABELS,
 } from "@/lib/calculations";
-
-interface MonthOption {
-  year: number;
-  month: number;
-  label: string;
-  selected: boolean;
-}
-
-function buildMonthOptions(now: Date): MonthOption[] {
-  const options: MonthOption[] = [];
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    options.push({
-      year: d.getFullYear(),
-      month: d.getMonth() + 1,
-      label: `${MONTH_NAMES_HE[d.getMonth()]} ${d.getFullYear()}`,
-      selected: i === 0,
-    });
-  }
-  return options;
-}
 
 export default function ExportPage() {
   const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-  const [monthOptions, setMonthOptions] = useState<MonthOption[]>(buildMonthOptions(now));
+  const [year, setYear] = useState(currentYear);
+  const [selected, setSelected] = useState<Set<number>>(new Set([currentMonth]));
   const [loading, setLoading] = useState(false);
+  const [loadingHours, setLoadingHours] = useState(false);
+  const currentMonthRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     db.jobs.toArray().then((j) => {
@@ -47,46 +30,62 @@ export default function ExportPage() {
     });
   }, []);
 
-  const toggleMonth = (idx: number) => {
-    setMonthOptions((prev) =>
-      prev.map((m, i) => (i === idx ? { ...m, selected: !m.selected } : m))
-    );
+  // Scroll current month into view when on current year
+  useEffect(() => {
+    if (year === currentYear) {
+      currentMonthRef.current?.scrollIntoView({ block: "nearest", behavior: "instant" });
+    }
+  }, [year]);
+
+  const navigateYear = (dir: -1 | 1) => {
+    const next = year + dir;
+    if (next > currentYear) return;
+    setYear(next);
+    setSelected(new Set());
   };
 
-  const selectAll = () => setMonthOptions((prev) => prev.map((m) => ({ ...m, selected: true })));
-  const selectNone = () => setMonthOptions((prev) => prev.map((m) => ({ ...m, selected: false })));
+  const toggleMonth = (m: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(m)) next.delete(m);
+      else next.add(m);
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    setSelected(new Set(Array.from({ length: 12 }, (_, i) => i + 1)));
+  };
+  const selectNone = () => setSelected(new Set());
+
+  const selectedCount = selected.size;
+
+  const selectedList = Array.from(selected)
+    .sort((a, b) => a - b)
+    .map((m) => ({ year, month: m, label: `${MONTH_NAMES_HE[m - 1]} ${year}` }));
 
   const handleExport = async () => {
-    if (!selectedJob) return;
-    const selected = monthOptions.filter((m) => m.selected);
-    if (selected.length === 0) {
+    if (!selectedJob || selectedList.length === 0) {
       alert("בחר לפחות חודש אחד לייצוא");
       return;
     }
-
     setLoading(true);
     try {
       const XLSX = await import("xlsx");
       const wb = XLSX.utils.book_new();
 
-      for (const mo of selected) {
+      for (const mo of selectedList) {
         const prefix = `${mo.year}-${String(mo.month).padStart(2, "0")}`;
         const shifts = await db.shifts
           .where("jobId").equals(selectedJob.id)
           .and((s) => s.date.startsWith(prefix))
           .toArray();
-
         const workShifts = shifts.filter((s) => s.isWorkDay).sort((a, b) => a.date.localeCompare(b.date));
 
         const rows: (string | number)[][] = [
-          // Header row
           ["תאריך", "יום", "שעת כניסה", "שעת יציאה", "שעות", "שכר יומי", "נסיעות", "טיפים", 'סה"כ'],
         ];
-
-        let totalHours = 0;
-        let totalEarnings = 0;
-        let totalCommute = 0;
-        let totalTips = 0;
+        let totalHours = 0, totalEarnings = 0, totalCommute = 0, totalTips = 0;
 
         for (const shift of workShifts) {
           const d = new Date(shift.date + "T00:00:00");
@@ -98,12 +97,10 @@ export default function ExportPage() {
           totalEarnings += dailyEarnings;
           totalCommute += e.commuteAmount;
           totalTips += tips;
-
           rows.push([
             `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`,
             `יום ${DAY_NAMES_HE[d.getDay()]}`,
-            shift.clockIn,
-            shift.clockOut,
+            shift.clockIn, shift.clockOut,
             parseFloat(hours.toFixed(2)),
             parseFloat(dailyEarnings.toFixed(2)),
             parseFloat(e.commuteAmount.toFixed(2)),
@@ -111,10 +108,7 @@ export default function ExportPage() {
             parseFloat((dailyEarnings + e.commuteAmount).toFixed(2)),
           ]);
         }
-
-        // Summary row
-        rows.push([
-          'סה"כ', "", "", "",
+        rows.push(['סה"כ', "", "", "",
           parseFloat(totalHours.toFixed(2)),
           parseFloat(totalEarnings.toFixed(2)),
           parseFloat(totalCommute.toFixed(2)),
@@ -123,13 +117,7 @@ export default function ExportPage() {
         ]);
 
         const ws = XLSX.utils.aoa_to_sheet(rows);
-
-        // Column widths
-        ws["!cols"] = [
-          { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 12 },
-          { wch: 10 }, { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 14 },
-        ];
-
+        ws["!cols"] = [{ wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 14 }];
         XLSX.utils.book_append_sheet(wb, ws, mo.label);
       }
 
@@ -140,50 +128,38 @@ export default function ExportPage() {
     }
   };
 
-  const [loadingHours, setLoadingHours] = useState(false);
-
   const handleExportHours = async () => {
-    if (!selectedJob) return;
-    const selected = monthOptions.filter((m) => m.selected);
-    if (selected.length === 0) {
+    if (!selectedJob || selectedList.length === 0) {
       alert("בחר לפחות חודש אחד לייצוא");
       return;
     }
-
     setLoadingHours(true);
     try {
       const XLSX = await import("xlsx");
       const wb = XLSX.utils.book_new();
 
-      for (const mo of selected) {
+      for (const mo of selectedList) {
         const prefix = `${mo.year}-${String(mo.month).padStart(2, "0")}`;
         const shifts = await db.shifts
           .where("jobId").equals(selectedJob.id)
           .and((s) => s.date.startsWith(prefix))
           .toArray();
-
         const workShifts = shifts.filter((s) => s.isWorkDay).sort((a, b) => a.date.localeCompare(b.date));
 
-        const rows: (string | number)[][] = [
-          ["תאריך", "יום", "שעת כניסה", "שעת יציאה", 'סה"כ שעות'],
-        ];
-
+        const rows: (string | number)[][] = [["תאריך", "יום", "שעת כניסה", "שעת יציאה", 'סה"כ שעות']];
         let totalHours = 0;
 
         for (const shift of workShifts) {
           const d = new Date(shift.date + "T00:00:00");
           const hours = calcWorkedHours(shift);
           totalHours += hours;
-
           rows.push([
             `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`,
             `יום ${DAY_NAMES_HE[d.getDay()]}`,
-            shift.clockIn,
-            shift.clockOut,
+            shift.clockIn, shift.clockOut,
             parseFloat(hours.toFixed(2)),
           ]);
         }
-
         rows.push(['סה"כ', "", "", "", parseFloat(totalHours.toFixed(2))]);
 
         const ws = XLSX.utils.aoa_to_sheet(rows);
@@ -197,8 +173,6 @@ export default function ExportPage() {
       setLoadingHours(false);
     }
   };
-
-  const selectedCount = monthOptions.filter((m) => m.selected).length;
 
   return (
     <div className="flex flex-col min-h-full">
@@ -230,6 +204,17 @@ export default function ExportPage() {
 
           {/* Month selection */}
           <div>
+            {/* Year navigator */}
+            <div className="flex items-center justify-between mb-3">
+              <button onClick={() => navigateYear(-1)} className="p-1.5 text-gray-500 hover:text-gray-800">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path d="m9 18 6-6-6-6" /></svg>
+              </button>
+              <span className="text-base font-semibold text-gray-800">{year}</span>
+              <button onClick={() => navigateYear(1)} disabled={year >= currentYear} className="p-1.5 text-gray-500 hover:text-gray-800 disabled:opacity-30">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path d="m15 18-6-6 6-6" /></svg>
+              </button>
+            </div>
+
             <div className="flex items-center justify-between mb-2">
               <label className="text-sm font-medium text-gray-700">בחר חודשים</label>
               <div className="flex gap-2">
@@ -238,37 +223,42 @@ export default function ExportPage() {
                 <button onClick={selectNone} className="text-xs text-gray-500 hover:underline">נקה הכל</button>
               </div>
             </div>
-            <div className="space-y-1.5">
-              {monthOptions.map((mo, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => toggleMonth(idx)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors text-sm ${
-                    mo.selected
-                      ? "border-blue-500 bg-blue-50 text-blue-800"
-                      : "border-gray-200 text-gray-700 hover:border-gray-300"
-                  }`}
-                >
-                  <span className="font-medium">{mo.label}</span>
-                  {mo.selected && (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4 text-blue-600">
-                      <path d="M20 6 9 17l-5-5" />
-                    </svg>
-                  )}
-                </button>
-              ))}
+
+            <div className="space-y-1.5 max-h-64 overflow-y-auto">
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
+                const sel = selected.has(m);
+                const isCurrent = year === currentYear && m === currentMonth;
+                return (
+                  <button
+                    key={m}
+                    ref={isCurrent ? currentMonthRef : undefined}
+                    onClick={() => toggleMonth(m)}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors text-sm ${
+                      sel
+                        ? "border-blue-500 bg-blue-50 text-blue-800"
+                        : "border-gray-200 text-gray-700 hover:border-gray-300"
+                    }`}
+                  >
+                    <span className="font-medium">{MONTH_NAMES_HE[m - 1]}</span>
+                    {isCurrent && !sel && <span className="text-xs text-gray-400">חודש נוכחי</span>}
+                    {sel && (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4 text-blue-600">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Export button */}
+          {/* Export buttons */}
           <button
             onClick={handleExport}
             disabled={loading || selectedCount === 0}
             className="w-full py-3.5 bg-green-600 text-white font-semibold rounded-2xl text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {loading ? (
-              <span>מייצא...</span>
-            ) : (
+            {loading ? <span>מייצא...</span> : (
               <>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -280,15 +270,12 @@ export default function ExportPage() {
             )}
           </button>
 
-          {/* Hours-only export button */}
           <button
             onClick={handleExportHours}
             disabled={loadingHours || selectedCount === 0}
             className="w-full py-3.5 bg-blue-600 text-white font-semibold rounded-2xl text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {loadingHours ? (
-              <span>מייצא...</span>
-            ) : (
+            {loadingHours ? <span>מייצא...</span> : (
               <>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
                   <circle cx="12" cy="12" r="10" />
