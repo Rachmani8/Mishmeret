@@ -112,7 +112,7 @@ export function defaultShift(date: string, jobId: string, partial?: Partial<Shif
     jobId,
     date,
     isWorkDay: true,
-    shiftType: "general",
+    shiftType: "morning",
     clockIn: "09:00",
     clockOut: "17:00",
     breakMinutes: 30,
