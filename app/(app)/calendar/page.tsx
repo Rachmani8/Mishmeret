@@ -202,6 +202,11 @@ export default function CalendarPage() {
     const isSat = date.getDay() === 6;
     const isFri = date.getDay() === 5;
     const isHoliday = !isSat && !!holidays[key];
+    const nextDay = new Date(date);
+    nextDay.setDate(nextDay.getDate() + 1);
+    const nextKey = formatDate(nextDay);
+    const erevName = !isSat && !isHoliday && holidays[nextKey] ? `ערב ${holidays[nextKey]}` : undefined;
+    const isErevChag = !!erevName;
 
     return (
       <button
@@ -210,16 +215,16 @@ export default function CalendarPage() {
           flex flex-col items-center justify-start rounded-xl border transition-all
           ${compact ? "p-1 gap-0.5 min-h-[56px]" : "p-2 gap-1 min-h-[72px]"}
           ${todayDay ? "border-blue-500 bg-blue-50" : isWorkedDay ? "border-green-200 bg-green-50" : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50"}
-          ${!todayDay && !isWorkedDay && (isSat || isFri) ? "bg-orange-50/50" : ""}
-          ${!todayDay && !isWorkedDay && isHoliday ? "bg-purple-50/60" : ""}
+          ${!todayDay && !isWorkedDay && (isSat || (isFri && !isErevChag)) ? "bg-orange-50/50" : ""}
+          ${!todayDay && !isWorkedDay && (isHoliday || isErevChag) ? "bg-purple-50/60" : ""}
         `}
       >
-        <span className={`text-xs font-semibold ${todayDay ? "text-blue-600" : isSat ? "text-orange-500" : isHoliday ? "text-purple-600" : "text-gray-500"}`}>
+        <span className={`text-xs font-semibold ${todayDay ? "text-blue-600" : isSat ? "text-orange-500" : (isHoliday || isErevChag) ? "text-purple-600" : "text-gray-500"}`}>
           {DAY_ABBR_HE[date.getDay()]}
         </span>
-        {isHoliday && (
+        {(isHoliday || isErevChag) && (
           <span className="text-[9px] font-medium text-purple-600 leading-tight text-center w-full truncate px-0.5">
-            {holidays[key]}
+            {isHoliday ? holidays[key] : erevName}
           </span>
         )}
         <span className={`font-bold ${compact ? "text-sm" : "text-base"} ${todayDay ? "text-blue-600" : "text-gray-800"}`}>
