@@ -66,8 +66,8 @@ function Row({
       <span className="text-sm font-medium text-gray-400 w-16 text-left">
         {hoursLabel ? `${hoursLabel} ש׳` : ""}
       </span>
-      <span className={`text-sm font-medium w-24 text-left ${isNegative ? "text-red-500" : bold ? "text-blue-600 font-bold" : "text-gray-800"}`}>
-        {isNegative ? "-" : ""}{formatCurrency(calculated)}
+      <span dir="ltr" className={`text-sm font-medium w-24 text-left ${isNegative ? "text-red-500" : bold ? "text-blue-600 font-bold" : "text-gray-800"}`}>
+        {isNegative ? "-" : ""}{formatCurrency(calculated).replace("₪", "")}
       </span>
       <div className="relative w-24">
         <input
@@ -221,7 +221,26 @@ export default function PayslipPage() {
               <Row label="תוספת שבת/חג 150%" calculated={payslip.weekendHolidayBonus} actual={actual.weekendBonus} onChange={(v) => setActualField("weekendBonus", v)} hours={payslip.weekendHours} />
             )}
             <Row label="נסיעות" calculated={payslip.commuteTotal} actual={actual.commute} onChange={(v) => setActualField("commute", v)} />
-            <Row label="ברוטו" calculated={payslip.grossTotal} actual={actual.grossTotal} onChange={(v) => setActualField("grossTotal", v)} bold />
+          </div>
+
+          {/* Gross total card */}
+          <div className="bg-orange-500 rounded-2xl px-4 py-4">
+            <div className="flex items-center justify-between">
+              <span className="text-white font-semibold text-base">ברוטו</span>
+              <span className="text-white font-bold text-xl">{formatCurrency(payslip.grossTotal)}</span>
+            </div>
+            {showValidator && (
+              <div className="mt-2 flex items-center gap-2 justify-end">
+                <span className="text-orange-200 text-xs">בפועל:</span>
+                <input
+                  type="number"
+                  placeholder="הזן סכום"
+                  value={actual.grossTotal}
+                  onChange={(e) => setActualField("grossTotal", e.target.value)}
+                  className="w-28 text-sm px-2 py-1 border border-orange-300 rounded-lg text-center bg-orange-400 text-white placeholder-orange-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+                />
+              </div>
+            )}
           </div>
 
           {/* Deductions section */}
@@ -236,7 +255,7 @@ export default function PayslipPage() {
           </div>
 
           {/* Net */}
-          <div className="bg-blue-600 rounded-2xl px-4 py-4 flex items-center justify-between">
+          <div className="bg-green-600 rounded-2xl px-4 py-4 flex items-center justify-between">
             <span className="text-white font-semibold text-base">נטו לתשלום</span>
             <span className="text-white font-bold text-xl">{formatCurrency(payslip.netPay)}</span>
           </div>
