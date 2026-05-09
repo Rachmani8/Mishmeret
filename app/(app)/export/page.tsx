@@ -92,7 +92,7 @@ export default function ExportPage() {
           const d = new Date(shift.date + "T00:00:00");
           const e = calcDayEarnings(shift, selectedJob);
           const hours = calcWorkedHours(shift);
-          const dailyEarnings = e.baseEarnings + e.overtimeEarnings + e.weekendBonus;
+          const dailyEarnings = e.baseEarnings + e.overtime1Earnings + e.overtime2Earnings + e.weekendBonus;
           const tips = shift.tips ?? 0;
           totalHours += hours;
           totalEarnings += dailyEarnings;

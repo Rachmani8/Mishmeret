@@ -14,7 +14,8 @@ import {
 
 interface ActualValues {
   baseSalary: string;
-  overtimePay: string;
+  overtime1Pay: string;
+  overtime2Pay: string;
   weekendBonus: string;
   commute: string;
   grossTotal: string;
@@ -26,7 +27,7 @@ interface ActualValues {
 }
 
 const emptyActual = (): ActualValues => ({
-  baseSalary: "", overtimePay: "", weekendBonus: "", commute: "", grossTotal: "",
+  baseSalary: "", overtime1Pay: "", overtime2Pay: "", weekendBonus: "", commute: "", grossTotal: "",
   pensionEmployee: "", nationalInsurance: "", healthInsurance: "", incomeTax: "", netPay: "",
 });
 
@@ -201,8 +202,15 @@ export default function PayslipPage() {
           <div className="bg-white border border-gray-100 rounded-2xl px-4 py-1">
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-3 pb-1">הכנסות</h3>
             <Row label="שכר בסיס" calculated={payslip.baseSalary} actual={actual.baseSalary} onChange={(v) => setActualField("baseSalary", v)} />
-            <Row label="שעות נוספות" calculated={payslip.overtimePay} actual={actual.overtimePay} onChange={(v) => setActualField("overtimePay", v)} />
-            <Row label="תוספת שבת/חג" calculated={payslip.weekendHolidayBonus} actual={actual.weekendBonus} onChange={(v) => setActualField("weekendBonus", v)} />
+            {payslip.overtime1Pay > 0 && (
+              <Row label="שעות נוספות 125%" calculated={payslip.overtime1Pay} actual={actual.overtime1Pay} onChange={(v) => setActualField("overtime1Pay", v)} />
+            )}
+            {payslip.overtime2Pay > 0 && (
+              <Row label="שעות נוספות 150%" calculated={payslip.overtime2Pay} actual={actual.overtime2Pay} onChange={(v) => setActualField("overtime2Pay", v)} />
+            )}
+            {payslip.weekendHolidayBonus > 0 && (
+              <Row label="תוספת שבת/חג 150%" calculated={payslip.weekendHolidayBonus} actual={actual.weekendBonus} onChange={(v) => setActualField("weekendBonus", v)} />
+            )}
             <Row label="נסיעות" calculated={payslip.commuteTotal} actual={actual.commute} onChange={(v) => setActualField("commute", v)} />
             <Row label="ברוטו" calculated={payslip.grossTotal} actual={actual.grossTotal} onChange={(v) => setActualField("grossTotal", v)} bold />
           </div>
