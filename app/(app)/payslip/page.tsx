@@ -38,6 +38,7 @@ function Row({
   onChange,
   isNegative = false,
   bold = false,
+  hours,
 }: {
   label: string;
   calculated: number;
@@ -45,6 +46,7 @@ function Row({
   onChange: (v: string) => void;
   isNegative?: boolean;
   bold?: boolean;
+  hours?: number;
 }) {
   const actualNum = parseFloat(actual);
   const diff = !isNaN(actualNum) ? actualNum - calculated : null;
@@ -54,9 +56,16 @@ function Row({
   const walletImpact = diff !== null ? (isNegative ? -diff : diff) : null;
   const isGood = walletImpact !== null && walletImpact > 0;
 
+  const hh = hours !== undefined ? Math.floor(hours) : 0;
+  const mm = hours !== undefined ? Math.round((hours - hh) * 60) : 0;
+  const hoursLabel = hours !== undefined ? `${hh}:${String(mm).padStart(2, "0")}` : null;
+
   return (
     <div className={`flex items-center gap-2 py-2.5 border-b border-gray-50 last:border-0 ${bold ? "border-t border-gray-200 mt-1 pt-3" : ""}`}>
       <span className={`flex-1 text-sm ${bold ? "font-semibold text-gray-900" : "text-gray-700"}`}>{label}</span>
+      <span className="text-sm font-medium text-gray-400 w-16 text-left">
+        {hoursLabel ? `${hoursLabel} ש׳` : ""}
+      </span>
       <span className={`text-sm font-medium w-24 text-left ${isNegative ? "text-red-500" : bold ? "text-blue-600 font-bold" : "text-gray-800"}`}>
         {isNegative ? "-" : ""}{formatCurrency(calculated)}
       </span>
@@ -201,15 +210,15 @@ export default function PayslipPage() {
           {/* Income section */}
           <div className="bg-white border border-gray-100 rounded-2xl px-4 py-1">
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-3 pb-1">הכנסות</h3>
-            <Row label="שכר בסיס" calculated={payslip.baseSalary} actual={actual.baseSalary} onChange={(v) => setActualField("baseSalary", v)} />
+            <Row label="שכר בסיס" calculated={payslip.baseSalary} actual={actual.baseSalary} onChange={(v) => setActualField("baseSalary", v)} hours={payslip.totalHours} />
             {payslip.overtime1Pay > 0 && (
-              <Row label="שעות נוספות 125%" calculated={payslip.overtime1Pay} actual={actual.overtime1Pay} onChange={(v) => setActualField("overtime1Pay", v)} />
+              <Row label="שעות נוספות 125%" calculated={payslip.overtime1Pay} actual={actual.overtime1Pay} onChange={(v) => setActualField("overtime1Pay", v)} hours={payslip.overtime1Hours} />
             )}
             {payslip.overtime2Pay > 0 && (
-              <Row label="שעות נוספות 150%" calculated={payslip.overtime2Pay} actual={actual.overtime2Pay} onChange={(v) => setActualField("overtime2Pay", v)} />
+              <Row label="שעות נוספות 150%" calculated={payslip.overtime2Pay} actual={actual.overtime2Pay} onChange={(v) => setActualField("overtime2Pay", v)} hours={payslip.overtime2Hours} />
             )}
             {payslip.weekendHolidayBonus > 0 && (
-              <Row label="תוספת שבת/חג 150%" calculated={payslip.weekendHolidayBonus} actual={actual.weekendBonus} onChange={(v) => setActualField("weekendBonus", v)} />
+              <Row label="תוספת שבת/חג 150%" calculated={payslip.weekendHolidayBonus} actual={actual.weekendBonus} onChange={(v) => setActualField("weekendBonus", v)} hours={payslip.weekendHours} />
             )}
             <Row label="נסיעות" calculated={payslip.commuteTotal} actual={actual.commute} onChange={(v) => setActualField("commute", v)} />
             <Row label="ברוטו" calculated={payslip.grossTotal} actual={actual.grossTotal} onChange={(v) => setActualField("grossTotal", v)} bold />

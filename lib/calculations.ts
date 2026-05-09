@@ -6,7 +6,10 @@ export interface DayEarnings {
   baseEarnings: number;
   overtime1Earnings: number;  // hours 1-2 above norm (125%)
   overtime2Earnings: number;  // hour 3+ above norm (150%)
+  overtime1Hours: number;
+  overtime2Hours: number;
   weekendBonus: number;
+  weekendHours: number;
   commuteAmount: number;
   totalGross: number;
   isWeekend: boolean;
@@ -16,7 +19,10 @@ export interface MonthlyPayslip {
   baseSalary: number;
   overtime1Pay: number;  // 125%
   overtime2Pay: number;  // 150%
+  overtime1Hours: number;
+  overtime2Hours: number;
   weekendHolidayBonus: number;
+  weekendHours: number;
   commuteTotal: number;
   grossTotal: number;
   pensionEmployee: number;
@@ -71,7 +77,7 @@ function calcHoursBreakdown(
   weekendMult: number,
   ot1Mult: number,
   ot2Mult: number,
-): { base: number; overtime1: number; overtime2: number; bonus: number } {
+): { base: number; overtime1: number; overtime2: number; bonus: number; ot1Hours: number; ot2Hours: number } {
   const normLeft = Math.max(0, norm - hoursAlreadyWorked);
   const ot1Hours = Math.max(0, Math.min(hours - normLeft, 2));
   const ot2Hours = Math.max(0, hours - normLeft - 2);
@@ -81,7 +87,7 @@ function calcHoursBreakdown(
   const overtime2 = ot2Hours * baseRate * (ot2Mult - 1);
   const bonus = isShabbat ? hours * baseRate * (weekendMult - 1) : 0;
 
-  return { base, overtime1, overtime2, bonus };
+  return { base, overtime1, overtime2, bonus, ot1Hours, ot2Hours };
 }
 
 export function calcDayEarnings(
@@ -102,7 +108,10 @@ export function calcDayEarnings(
   let baseEarnings = 0;
   let overtime1Earnings = 0;
   let overtime2Earnings = 0;
+  let overtime1Hours = 0;
+  let overtime2Hours = 0;
   let weekendBonus = 0;
+  let weekendHours = 0;
   let isWeekend = false;
 
   if (isSaturday) {
@@ -110,17 +119,17 @@ export function calcDayEarnings(
     const bd = calcHoursBreakdown(workedHours, 0, norm, job.baseHourlyRate, true,
       job.weekendMultiplier, job.overtime1Multiplier, job.overtime2Multiplier);
     baseEarnings = bd.base;
-    overtime1Earnings = bd.overtime1;
-    overtime2Earnings = bd.overtime2;
-    weekendBonus = bd.bonus;
+    overtime1Earnings = bd.overtime1; overtime1Hours = bd.ot1Hours;
+    overtime2Earnings = bd.overtime2; overtime2Hours = bd.ot2Hours;
+    weekendBonus = bd.bonus; weekendHours = workedHours;
   } else if (isHolidayDay) {
     isWeekend = true;
     const bd = calcHoursBreakdown(workedHours, 0, norm, job.baseHourlyRate, true,
       job.holidayMultiplier, job.overtime1Multiplier, job.overtime2Multiplier);
     baseEarnings = bd.base;
-    overtime1Earnings = bd.overtime1;
-    overtime2Earnings = bd.overtime2;
-    weekendBonus = bd.bonus;
+    overtime1Earnings = bd.overtime1; overtime1Hours = bd.ot1Hours;
+    overtime2Earnings = bd.overtime2; overtime2Hours = bd.ot2Hours;
+    weekendBonus = bd.bonus; weekendHours = workedHours;
   } else if (candleEntry !== undefined) {
     const candleMin = candleEntry;
     const clockInMin = timeToMinutes(shift.clockIn);
@@ -137,21 +146,21 @@ export function calcDayEarnings(
     const regBd = calcHoursBreakdown(regularHours, 0, norm, job.baseHourlyRate, false,
       job.weekendMultiplier, job.overtime1Multiplier, job.overtime2Multiplier);
     baseEarnings = regBd.base;
-    overtime1Earnings = regBd.overtime1;
-    overtime2Earnings = regBd.overtime2;
+    overtime1Earnings = regBd.overtime1; overtime1Hours = regBd.ot1Hours;
+    overtime2Earnings = regBd.overtime2; overtime2Hours = regBd.ot2Hours;
 
     const shabBd = calcHoursBreakdown(shabbatHours, regularHours, norm, job.baseHourlyRate, true,
       job.weekendMultiplier, job.overtime1Multiplier, job.overtime2Multiplier);
     baseEarnings += shabBd.base;
-    overtime1Earnings += shabBd.overtime1;
-    overtime2Earnings += shabBd.overtime2;
-    weekendBonus = shabBd.bonus;
+    overtime1Earnings += shabBd.overtime1; overtime1Hours += shabBd.ot1Hours;
+    overtime2Earnings += shabBd.overtime2; overtime2Hours += shabBd.ot2Hours;
+    weekendBonus = shabBd.bonus; weekendHours = shabbatHours;
   } else {
     const bd = calcHoursBreakdown(workedHours, 0, norm, job.baseHourlyRate, false,
       job.weekendMultiplier, job.overtime1Multiplier, job.overtime2Multiplier);
     baseEarnings = bd.base;
-    overtime1Earnings = bd.overtime1;
-    overtime2Earnings = bd.overtime2;
+    overtime1Earnings = bd.overtime1; overtime1Hours = bd.ot1Hours;
+    overtime2Earnings = bd.overtime2; overtime2Hours = bd.ot2Hours;
   }
 
   const commuteAmount = job.commuteEnabled && shift.isWorkDay ? job.commuteDaily : 0;
@@ -162,7 +171,10 @@ export function calcDayEarnings(
     baseEarnings,
     overtime1Earnings,
     overtime2Earnings,
+    overtime1Hours,
+    overtime2Hours,
     weekendBonus,
+    weekendHours,
     commuteAmount,
     totalGross: baseEarnings + overtime1Earnings + overtime2Earnings + weekendBonus + commuteAmount,
     isWeekend,
@@ -218,7 +230,10 @@ export function calcMonthlyPayslip(
   const baseSalary = earnings.reduce((sum, e) => sum + e.baseEarnings, 0);
   const overtime1Pay = earnings.reduce((sum, e) => sum + e.overtime1Earnings, 0);
   const overtime2Pay = earnings.reduce((sum, e) => sum + e.overtime2Earnings, 0);
+  const overtime1Hours = earnings.reduce((sum, e) => sum + e.overtime1Hours, 0);
+  const overtime2Hours = earnings.reduce((sum, e) => sum + e.overtime2Hours, 0);
   const weekendHolidayBonus = earnings.reduce((sum, e) => sum + e.weekendBonus, 0);
+  const weekendHours = earnings.reduce((sum, e) => sum + e.weekendHours, 0);
   const commuteTotal = earnings.reduce((sum, e) => sum + e.commuteAmount, 0);
   const earningsGross = baseSalary + overtime1Pay + overtime2Pay + weekendHolidayBonus;
   const grossTotal = earningsGross + commuteTotal;
@@ -236,7 +251,10 @@ export function calcMonthlyPayslip(
     baseSalary,
     overtime1Pay,
     overtime2Pay,
+    overtime1Hours,
+    overtime2Hours,
     weekendHolidayBonus,
+    weekendHours,
     commuteTotal,
     grossTotal,
     pensionEmployee,
