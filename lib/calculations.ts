@@ -222,7 +222,7 @@ export function calcMonthlyPayslip(
   const totalHours = earnings.reduce((sum, e) => sum + e.workedHours, 0);
 
   const pensionEmployee = job.pensionEnabled
-    ? earningsGross * (job.pensionEmployeePercent / 100)
+    ? baseSalary * (job.pensionEmployeePercent / 100)
     : 0;
   const nationalInsurance = calcNationalInsurance(earningsGross);
   const healthInsurance = calcHealthInsurance(earningsGross);
