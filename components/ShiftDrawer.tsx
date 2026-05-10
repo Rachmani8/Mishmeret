@@ -142,6 +142,7 @@ export default function ShiftDrawer({ date, job, existingShift, onClose, onSave,
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">הערות</label>
                 <textarea
                   rows={2}
+                  maxLength={500}
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   placeholder="הוסף הערה..."

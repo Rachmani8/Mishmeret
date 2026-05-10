@@ -121,7 +121,8 @@ export default function ExportPage() {
         XLSX.utils.book_append_sheet(wb, ws, mo.label);
       }
 
-      const fileName = `משמרת_${selectedJob.name}_${new Date().toLocaleDateString("he-IL").replace(/\//g, "-")}.xlsx`;
+      const safeName = selectedJob.name.replace(/[<>:|"?*\/\\]/g, "_");
+      const fileName = `משמרת_${safeName}_${new Date().toLocaleDateString("he-IL").replace(/\//g, "-")}.xlsx`;
       XLSX.writeFile(wb, fileName);
     } finally {
       setLoading(false);
@@ -167,7 +168,8 @@ export default function ExportPage() {
         XLSX.utils.book_append_sheet(wb, ws, mo.label);
       }
 
-      const fileName = `שעות_${selectedJob.name}_${new Date().toLocaleDateString("he-IL").replace(/\//g, "-")}.xlsx`;
+      const safeName = selectedJob.name.replace(/[<>:|"?*\/\\]/g, "_");
+      const fileName = `שעות_${safeName}_${new Date().toLocaleDateString("he-IL").replace(/\//g, "-")}.xlsx`;
       XLSX.writeFile(wb, fileName);
     } finally {
       setLoadingHours(false);

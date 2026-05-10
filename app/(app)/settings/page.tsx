@@ -11,22 +11,23 @@ type Field = {
   type: "text" | "number" | "toggle" | "percent";
   hint?: string;
   step?: number;
+  max?: number;
 };
 
 const jobFields: Field[] = [
   { key: "name", label: "שם משרה", type: "text" },
-  { key: "baseHourlyRate", label: "שכר שעתי בסיסי (₪)", type: "number", step: 0.5 },
-  { key: "dailyNormHours", label: "נורמת שעות יומית", type: "number", step: 0.1, hint: "ברירת מחדל: 8.6 שעות (43ש׳ / 5 ימים)" },
-  { key: "weekendMultiplier", label: "תוספת שישי/שבת (פקטור)", type: "number", step: 0.05, hint: "ברירת מחדל: 1.5 (150%)" },
-  { key: "holidayMultiplier", label: "תוספת חג (פקטור)", type: "number", step: 0.05 },
-  { key: "overtime1Multiplier", label: "שעות נוספות 1-2 (פקטור)", type: "number", step: 0.05, hint: "ברירת מחדל: 1.25" },
-  { key: "overtime2Multiplier", label: "שעות נוספות 3+ (פקטור)", type: "number", step: 0.05, hint: "ברירת מחדל: 1.5" },
+  { key: "baseHourlyRate", label: "שכר שעתי בסיסי (₪)", type: "number", step: 0.5, max: 5000 },
+  { key: "dailyNormHours", label: "נורמת שעות יומית", type: "number", step: 0.1, max: 24, hint: "ברירת מחדל: 8.6 שעות (43ש׳ / 5 ימים)" },
+  { key: "weekendMultiplier", label: "תוספת שישי/שבת (פקטור)", type: "number", step: 0.05, max: 5, hint: "ברירת מחדל: 1.5 (150%)" },
+  { key: "holidayMultiplier", label: "תוספת חג (פקטור)", type: "number", step: 0.05, max: 5 },
+  { key: "overtime1Multiplier", label: "שעות נוספות 1-2 (פקטור)", type: "number", step: 0.05, max: 5, hint: "ברירת מחדל: 1.25" },
+  { key: "overtime2Multiplier", label: "שעות נוספות 3+ (פקטור)", type: "number", step: 0.05, max: 5, hint: "ברירת מחדל: 1.5" },
   { key: "commuteEnabled", label: "נסיעות", type: "toggle" },
-  { key: "commuteDaily", label: "נסיעות יומיות (₪)", type: "number", step: 0.1, hint: "ברירת מחדל: ₪22.60 ליום" },
-  { key: "taxCreditPoints", label: "נקודות זיכוי", type: "number", step: 0.25, hint: "ברירת מחדל: 2.25 לתושב ישראל רווק" },
+  { key: "commuteDaily", label: "נסיעות יומיות (₪)", type: "number", step: 0.1, max: 1000, hint: "ברירת מחדל: ₪22.60 ליום" },
+  { key: "taxCreditPoints", label: "נקודות זיכוי", type: "number", step: 0.25, max: 20, hint: "ברירת מחדל: 2.25 לתושב ישראל רווק" },
   { key: "pensionEnabled", label: "פנסיה", type: "toggle" },
-  { key: "pensionEmployeePercent", label: "הפרשת עובד לפנסיה (%)", type: "percent", hint: "ברירת מחדל: 6%" },
-  { key: "pensionEmployerPercent", label: "הפרשת מעסיק לפנסיה (%)", type: "percent", hint: "ברירת מחדל: 6.5%" },
+  { key: "pensionEmployeePercent", label: "הפרשת עובד לפנסיה (%)", type: "percent", max: 50, hint: "ברירת מחדל: 6%" },
+  { key: "pensionEmployerPercent", label: "הפרשת מעסיק לפנסיה (%)", type: "percent", max: 50, hint: "ברירת מחדל: 6.5%" },
 ];
 
 function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void; onDelete: (id: string) => void }) {
@@ -83,6 +84,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
                   value={value as number}
                   step={field.step ?? 1}
                   min={0}
+                  max={field.max}
                   onChange={(e) => set(field.key, parseFloat(e.target.value) || 0)}
                   className="w-28 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
