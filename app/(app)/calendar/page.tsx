@@ -9,7 +9,6 @@ import { useHolidayTimes } from "@/lib/useHolidayTimes";
 import {
   SHIFT_TYPE_COLORS,
   SHIFT_TYPE_LABELS,
-  DAY_NAMES_HE,
   DAY_ABBR_HE,
   MONTH_NAMES_HE,
 } from "@/lib/calculations";
@@ -33,10 +32,18 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
-  // Clock in/out
-  const [clockState, setClockState] = useState<ClockState>("idle");
-  const [todayClockIn, setTodayClockIn] = useState("");
-  const [todayClockOut, setTodayClockOut] = useState("");
+  // Clock in/out — initialized from localStorage on mount (guard for SSR)
+  const [clockState, setClockState] = useState<ClockState>(
+    () => typeof window !== "undefined"
+      ? (localStorage.getItem(`clockState_${todayStr}`) as ClockState | null) ?? "idle"
+      : "idle"
+  );
+  const [todayClockIn, setTodayClockIn] = useState(
+    () => typeof window !== "undefined" ? localStorage.getItem(`clockIn_${todayStr}`) ?? "" : ""
+  );
+  const [todayClockOut, setTodayClockOut] = useState(
+    () => typeof window !== "undefined" ? localStorage.getItem(`clockOut_${todayStr}`) ?? "" : ""
+  );
 
   useEffect(() => {
     db.jobs.toArray().then((j) => {
@@ -44,16 +51,6 @@ export default function CalendarPage() {
       if (j.length > 0) setSelectedJob(j[0]);
     });
   }, []);
-
-  // Restore clock state from localStorage (resets each new day via date key)
-  useEffect(() => {
-    const state = localStorage.getItem(`clockState_${todayStr}`) as ClockState | null;
-    if (state) setClockState(state);
-    const ci = localStorage.getItem(`clockIn_${todayStr}`);
-    if (ci) setTodayClockIn(ci);
-    const co = localStorage.getItem(`clockOut_${todayStr}`);
-    if (co) setTodayClockOut(co);
-  }, [todayStr]);
 
   const loadShifts = useCallback(async (job: Job, date: Date) => {
     const prefix = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -72,6 +69,7 @@ export default function CalendarPage() {
 
   useEffect(() => {
     if (!selectedJob) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadShifts(selectedJob, currentDate);
   }, [selectedJob, currentDate, loadShifts]);
 

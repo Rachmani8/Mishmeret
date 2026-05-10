@@ -126,6 +126,7 @@ export default function SettingsPage() {
       if (j.length > 0 && !expandedId) setExpandedId(j[0].id);
     });
     getAppSettings().then((s) => setCityId(s.cityId));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCityChange = async (newCityId: number) => {

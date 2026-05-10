@@ -22,11 +22,8 @@ export default function ShiftDrawer({ date, job, existingShift, onClose, onSave,
 
   useEffect(() => {
     if (!date || !job) return;
-    if (existingShift) {
-      setForm({ ...existingShift });
-    } else {
-      setForm(defaultShift(date, job.id));
-    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setForm(existingShift ? { ...existingShift } : defaultShift(date, job.id));
   }, [date, job, existingShift]);
 
   if (!date || !job || !form) return null;

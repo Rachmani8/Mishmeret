@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { db } from "@/lib/db";
 import type { Job, Shift } from "@/lib/db";
 import { useShabbatTimes } from "@/lib/useShabbatTimes";
@@ -9,7 +9,6 @@ import {
   calcMonthlyPayslip,
   formatCurrency,
   MONTH_NAMES_HE,
-  type MonthlyPayslip,
 } from "@/lib/calculations";
 
 interface ActualValues {
@@ -98,7 +97,6 @@ export default function PayslipPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [shifts, setShifts] = useState<Shift[]>([]);
-  const [payslip, setPayslip] = useState<MonthlyPayslip | null>(null);
   const [totalTips, setTotalTips] = useState(0);
   const shabbatTimes = useShabbatTimes(year);
   const holidays = useHolidayTimes(year);
@@ -125,10 +123,10 @@ export default function PayslipPage() {
       });
   }, [selectedJob, year, month]);
 
-  useEffect(() => {
-    if (!selectedJob) return;
-    setPayslip(calcMonthlyPayslip(shifts, selectedJob, shabbatTimes, holidays));
-  }, [shifts, selectedJob, shabbatTimes, holidays]);
+  const payslip = useMemo(
+    () => selectedJob ? calcMonthlyPayslip(shifts, selectedJob, shabbatTimes, holidays) : null,
+    [shifts, selectedJob, shabbatTimes, holidays]
+  );
 
   const navigate = (dir: -1 | 1) => {
     let m = month + dir;
@@ -282,7 +280,7 @@ export default function PayslipPage() {
           {showValidator && (
             <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
               <p className="text-xs text-amber-700 font-medium mb-1">הנחיות:</p>
-              <p className="text-xs text-amber-600">הזן את הסכומים מהתלוש שלך בעמודה "בפועל". הערכים יסומנו בירוק (לטובתך) או אדום (לרעתך) אם יש פערים משמעותיים.</p>
+              <p className="text-xs text-amber-600">הזן את הסכומים מהתלוש שלך בעמודה &quot;בפועל&quot;. הערכים יסומנו בירוק (לטובתך) או אדום (לרעתך) אם יש פערים משמעותיים.</p>
             </div>
           )}
         </div>

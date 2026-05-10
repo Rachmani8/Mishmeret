@@ -35,7 +35,7 @@ export default function ExportPage() {
     if (year === currentYear) {
       currentMonthRef.current?.scrollIntoView({ block: "nearest", behavior: "instant" });
     }
-  }, [year]);
+  }, [year, currentYear]);
 
   const navigateYear = (dir: -1 | 1) => {
     const next = year + dir;
