@@ -28,7 +28,7 @@ Built to help Israeli shift workers track hours and validate their payslip again
 | Styling | Tailwind CSS v4 |
 | Storage | Dexie (IndexedDB — no backend, all data is local) |
 | Excel | xlsx |
-| Shabbat times | HebCal API |
+| Shabbat & Holiday times | HebCal API |
 
 ## Getting Started
 
