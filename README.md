@@ -2,6 +2,16 @@
 
 A Hebrew-first Progressive Web App for Israeli employees to track work shifts and calculate wages according to Israeli labor law.
 
+Built to help Israeli shift workers track hours and validate their payslip against actual Israeli labor law — overtime tiers, Shabbat rates, national insurance, and income tax included.
+
+## Live Demo
+
+[Open App](YOUR_VERCEL_URL_HERE)
+
+## Screenshots
+
+<!-- Add a screenshot of the app here -->
+
 ## Features
 
 - **Calendar** — Monthly/weekly shift view with clock in/out bar
@@ -18,7 +28,6 @@ A Hebrew-first Progressive Web App for Israeli employees to track work shifts an
 | Styling | Tailwind CSS v4 |
 | Storage | Dexie (IndexedDB — no backend, all data is local) |
 | Excel | xlsx |
-| PWA | next-pwa |
 | Shabbat times | HebCal API |
 
 ## Getting Started
