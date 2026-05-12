@@ -6,7 +6,7 @@ Built to help Israeli shift workers track hours and validate their payslip again
 
 ## Live Demo
 
-[Open App](YOUR_VERCEL_URL_HERE)
+[Open App](https://mishmeret.vercel.app/calendar)
 
 ## Screenshots
 
