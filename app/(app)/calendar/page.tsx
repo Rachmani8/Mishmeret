@@ -30,6 +30,7 @@ export default function CalendarPage() {
   const [selectedDateHoliday, setSelectedDateHoliday] = useState<string | undefined>(undefined);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [clockJob, setClockJob] = useState<Job | null>(null);
+  const [clockShiftId, setClockShiftId] = useState<string | null>(null);
 
   // Clock in/out — initialized from localStorage on mount (guard for SSR)
   const [clockState, setClockState] = useState<ClockState>(
@@ -80,6 +81,7 @@ export default function CalendarPage() {
       ? { ...existing, isWorkDay: true, clockIn: time }
       : defaultShift(todayStr, clockJob.id, { clockIn: time });
     await db.shifts.put(shift);
+    setClockShiftId(shift.id);
     setTodayClockIn(time);
     setClockState("clocked-in");
     localStorage.setItem(`clockState_${todayStr}`, "clocked-in");
@@ -153,11 +155,7 @@ export default function CalendarPage() {
   };
 
   const handleSave = useCallback(async (shift: Shift) => {
-    if (!selectedJob) return;
-    await db.shifts.put(shift);
     await loadShifts(currentDate);
-    setSelectedDate(null);
-    // If saving today after clocking out, mark as reviewed
     if (shift.date === todayStr) {
       const cur = localStorage.getItem(`clockState_${todayStr}`);
       if (cur === "clocked-out") {
@@ -165,23 +163,20 @@ export default function CalendarPage() {
         localStorage.setItem(`clockState_${todayStr}`, "reviewed");
       }
     }
-  }, [selectedJob, currentDate, loadShifts, todayStr]);
-
+  }, [currentDate, loadShifts, todayStr]);
 
   const handleDelete = useCallback(async (shiftId: string) => {
     const shift = shifts.find((s) => s.id === shiftId);
-    await db.shifts.delete(shiftId);
     setShifts((prev) => prev.filter((s) => s.id !== shiftId));
-    // If deleting today's shift, reset clock state
     if (shift?.date === todayStr) {
       setClockState("idle");
+      setClockShiftId(null);
       setTodayClockIn("");
       setTodayClockOut("");
       localStorage.removeItem(`clockState_${todayStr}`);
       localStorage.removeItem(`clockIn_${todayStr}`);
       localStorage.removeItem(`clockOut_${todayStr}`);
     }
-    setSelectedDate(null);
   }, [shifts, todayStr]);
 
   const headerLabel =
@@ -428,8 +423,8 @@ export default function CalendarPage() {
         job={selectedJob}
         jobs={jobs}
         holidayLabel={selectedDateHoliday}
-        existingShift={selectedDate ? (shiftMap[selectedDate]?.find((s) => s.jobId === selectedJob?.id) ?? null) : null}
-        onClose={() => { setSelectedDate(null); setSelectedDateHoliday(undefined); }}
+        openShiftId={clockState === "clocked-out" && selectedDate === todayStr ? clockShiftId : null}
+        onClose={() => { setSelectedDate(null); setSelectedDateHoliday(undefined); loadShifts(currentDate); }}
         onSave={handleSave}
         onDelete={handleDelete}
       />

@@ -276,12 +276,10 @@ export default function SettingsPage() {
 
   useEffect(() => {
     db.jobs.toArray().then((j) => {
-      setJobs(j);
-      if (j.length > 0 && !expandedId) setExpandedId(j[0].id);
+      setJobs(j.slice().sort((a, b) => a.name.localeCompare(b.name, "he")));
     });
     getAppSettings().then((s) => setCityId(s.cityId));
     db.shabbatCache.count().then((n) => setHasSynced(n > 0));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCityChange = async (newCityId: number) => {
@@ -345,11 +343,14 @@ export default function SettingsPage() {
             {expandedId === job.id ? (
               <JobForm job={job} onSave={handleSave} onDelete={handleDelete} />
             ) : (
-              <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-100 rounded-2xl mb-2">
-                <span className="text-sm font-medium text-gray-800">משרה — {job.name}</span>
+              <div
+                className="flex items-center justify-between px-4 py-3 rounded-2xl mb-2 border"
+                style={{ backgroundColor: `${job.color}18`, borderColor: job.color }}
+              >
+                <span className="text-sm font-medium text-gray-800">{job.name}</span>
                 <button
                   onClick={() => setExpandedId(job.id)}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700 underline"
                 >
                   פתיחת הגדרות משרה
                 </button>
@@ -361,7 +362,7 @@ export default function SettingsPage() {
         {/* Add job button */}
         <button
           onClick={addJob}
-          className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3.5 bg-white border-2 border-dashed border-gray-300 hover:border-gray-400 text-gray-500 hover:text-gray-700 rounded-2xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
             <path d="M12 5v14M5 12h14" />

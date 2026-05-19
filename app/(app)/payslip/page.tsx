@@ -153,10 +153,9 @@ export default function PayslipPage() {
                   key={j.id}
                   onClick={() => setSelectedJob(j)}
                   className={`px-3 py-1 text-xs font-medium rounded-lg border transition-colors ${
-                    selectedJob?.id === j.id
-                      ? "bg-blue-600 border-blue-600 text-white"
-                      : "border-gray-200 text-gray-600 hover:border-gray-300"
+                    selectedJob?.id === j.id ? "text-white" : "border-gray-200 text-gray-600 hover:border-gray-300"
                   }`}
+                  style={selectedJob?.id === j.id ? { backgroundColor: j.color, borderColor: j.color } : undefined}
                 >
                   {j.name}
                 </button>
