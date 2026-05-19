@@ -76,6 +76,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
                   type="text"
                   value={value as string}
                   onChange={(e) => set(field.key, e.target.value)}
+                  onFocus={(e) => e.target.select()}
                   className="w-40 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               ) : (
@@ -86,6 +87,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
                   min={0}
                   max={field.max}
                   onChange={(e) => set(field.key, parseFloat(e.target.value) || 0)}
+                  onFocus={(e) => e.target.select()}
                   className="w-28 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               )}

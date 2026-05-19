@@ -74,6 +74,7 @@ function Row({
           placeholder="בפועל"
           value={actual}
           onChange={(e) => onChange(e.target.value)}
+          onFocus={(e) => e.target.select()}
           className={`w-full text-sm px-2 py-1 border rounded-lg text-center focus:outline-none focus:ring-2 ${
             hasDiscrepancy
               ? isGood ? "border-green-500 ring-green-500/20 bg-green-50 text-green-600" : "border-red-500 ring-red-500/20 bg-red-50 text-red-500"
@@ -235,6 +236,7 @@ export default function PayslipPage() {
                   placeholder="הזן סכום"
                   value={actual.grossTotal}
                   onChange={(e) => setActualField("grossTotal", e.target.value)}
+                  onFocus={(e) => e.target.select()}
                   className="w-28 text-sm px-2 py-1 border border-orange-300 rounded-lg text-center bg-orange-400 text-white placeholder-orange-200 focus:outline-none focus:ring-2 focus:ring-white/50"
                 />
               </div>

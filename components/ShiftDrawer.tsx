@@ -128,6 +128,7 @@ export default function ShiftDrawer({ date, job, existingShift, onClose, onSave,
                   step={1}
                   value={form.tips ?? 0}
                   onChange={(e) => setForm({ ...form, tips: Number(e.target.value) || 0 })}
+                  onFocus={(e) => e.target.select()}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="0"
                 />
