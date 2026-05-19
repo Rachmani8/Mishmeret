@@ -16,6 +16,7 @@ export interface Job {
   pensionEmployeePercent: number;   // default 6
   pensionEmployerPercent: number;   // default 6.5 (תגמולים)
   pensionSeverancePercent: number;  // default 6   (פיצויים)
+  color: string;                    // hex color for UI display
 }
 
 export interface Shift {
@@ -103,6 +104,7 @@ export function defaultJob(partial?: Partial<Job>): Job {
     pensionEmployeePercent: 6,
     pensionEmployerPercent: 6.5,
     pensionSeverancePercent: 6,
+    color: "#EF4444",
     ...partial,
   };
 }

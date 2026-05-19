@@ -50,6 +50,8 @@ export default function ShiftDrawer({ date, job, jobs, holidayLabel, existingShi
     onSave({ ...form, isWorkDay: true });
   };
 
+  const activeColor = activeJob?.color ?? "#EF4444";
+
   return (
     <>
       {/* Backdrop */}
@@ -60,9 +62,14 @@ export default function ShiftDrawer({ date, job, jobs, holidayLabel, existingShi
       />
       {/* Drawer */}
       <div className="fixed bottom-16 right-0 left-0 z-50 bg-white rounded-t-2xl shadow-2xl max-w-[430px] mx-auto animate-slide-up">
+        {/* Tint overlay */}
+        <div
+          className="absolute inset-0 rounded-t-2xl pointer-events-none transition-colors duration-200"
+          style={{ backgroundColor: `${activeColor}1a` }}
+        />
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 bg-gray-200 rounded-full" />
+          <div className="w-10 h-1 rounded-full transition-colors duration-200" style={{ backgroundColor: activeColor }} />
         </div>
 
         <div className="px-5 pb-6 max-h-[75vh] overflow-y-auto">
@@ -82,19 +89,22 @@ export default function ShiftDrawer({ date, job, jobs, holidayLabel, existingShi
           {/* Job picker — only when multiple jobs exist */}
           {jobs.length > 1 && (
             <div className="flex gap-2 mb-4">
-              {jobs.map((j) => (
-                <button
-                  key={j.id}
-                  onClick={() => switchJob(j)}
-                  className={`flex-1 py-2 text-sm font-medium rounded-xl border transition-colors ${
-                    activeJob?.id === j.id
-                      ? "bg-blue-600 border-blue-600 text-white"
-                      : "border-gray-200 text-gray-600 hover:border-gray-300"
-                  }`}
-                >
-                  {j.name}
-                </button>
-              ))}
+              {jobs.map((j) => {
+                const isActive = activeJob?.id === j.id;
+                const color = j.color ?? "#EF4444";
+                return (
+                  <button
+                    key={j.id}
+                    onClick={() => switchJob(j)}
+                    style={isActive ? { backgroundColor: color, borderColor: color } : undefined}
+                    className={`flex-1 py-2 text-sm font-medium rounded-xl border transition-colors ${
+                      isActive ? "text-white" : "border-gray-200 text-gray-600 hover:border-gray-300"
+                    }`}
+                  >
+                    {j.name}
+                  </button>
+                );
+              })}
             </div>
           )}
 

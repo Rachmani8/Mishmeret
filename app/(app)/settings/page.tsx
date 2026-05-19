@@ -29,6 +29,15 @@ const rateFields: Field[] = [
 
 const taxField: Field = { key: "taxCreditPoints", label: "נקודות זיכוי", type: "number", step: 0.25, max: 20, hint: "ברירת מחדל: 2.25 לתושב/ת ישראל רווק/ה" };
 const commuteSubField: Field = { key: "commuteDaily", label: "נסיעות יומיות (₪)", type: "number", step: 0.1, max: 1000, hint: "ברירת מחדל: ₪22.60 ליום" };
+const JOB_COLOR_OPTIONS = [
+  "#EF4444", // red
+  "#EAB308", // yellow
+  "#8B5CF6", // purple
+  "#22C55E", // green
+  "#F97316", // orange
+  "#3B82F6", // blue
+];
+
 const pensionSubFields: Field[] = [
   { key: "pensionEmployeePercent", label: "הפרשת עובד/ת (%)", type: "percent", max: 50, hint: "ברירת מחדל: 6%" },
   { key: "pensionEmployerPercent", label: "תגמולים מעסיק (%)", type: "percent", max: 50, hint: "ברירת מחדל: 6.5%" },
@@ -215,6 +224,27 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
           </div>
         </>
       )}
+
+      {/* Color picker */}
+      <div className="px-4 py-3 border-b border-gray-200">
+        <label className="block text-xs font-medium text-gray-700 mb-2">צבע משרה</label>
+        <div className="flex gap-2">
+          {JOB_COLOR_OPTIONS.map((color) => (
+            <button
+              key={color}
+              onClick={() => set("color", color)}
+              className="w-7 h-7 rounded-full transition-transform hover:scale-110 flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: color, boxShadow: form.color === color ? `0 0 0 2px white, 0 0 0 4px ${color}` : undefined }}
+            >
+              {form.color === color && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3} className="w-3.5 h-3.5">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="px-4 py-4 flex gap-3 bg-gray-50/50">
         <button

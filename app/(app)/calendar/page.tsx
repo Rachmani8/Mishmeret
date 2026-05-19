@@ -64,7 +64,7 @@ export default function CalendarPage() {
     (acc[s.date] ??= []).push(s);
     return acc;
   }, {});
-  const jobColorMap = Object.fromEntries(jobs.map((j, i) => [j.id, JOB_COLORS[i % JOB_COLORS.length]]));
+  const jobColorMap = Object.fromEntries(jobs.map((j, i) => [j.id, j.color ?? JOB_COLORS[i % JOB_COLORS.length]]));
   const jobNameMap = Object.fromEntries(jobs.map((j) => [j.id, j.name]));
 
   // Clock In
