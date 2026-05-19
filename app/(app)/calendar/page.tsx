@@ -6,12 +6,9 @@ import type { Job, Shift } from "@/lib/db";
 import { defaultShift } from "@/lib/db";
 import ShiftDrawer from "@/components/ShiftDrawer";
 import { useHolidayTimes } from "@/lib/useHolidayTimes";
-import {
-  SHIFT_TYPE_COLORS,
-  SHIFT_TYPE_LABELS,
-  DAY_ABBR_HE,
-  MONTH_NAMES_HE,
-} from "@/lib/calculations";
+import { DAY_ABBR_HE, MONTH_NAMES_HE } from "@/lib/calculations";
+
+const JOB_COLORS = ["#3B82F6", "#F97316", "#10B981", "#8B5CF6"];
 
 type ClockState = "idle" | "clocked-in" | "clocked-out" | "reviewed";
 
@@ -52,34 +49,28 @@ export default function CalendarPage() {
     });
   }, []);
 
-  const loadShifts = useCallback(async (job: Job, date: Date) => {
+  const loadShifts = useCallback(async (date: Date) => {
     const prefix = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const data = await db.shifts.where("jobId").equals(job.id).and((s) => s.date.startsWith(prefix)).toArray();
+    const data = await db.shifts.filter((s) => s.date.startsWith(prefix)).toArray();
     setShifts(data);
-    // Clear stale clock state if no shift exists for today under this job
-    if (prefix === todayStr.substring(0, 7) && !data.some((s) => s.date === todayStr)) {
-      setClockState("idle");
-      setTodayClockIn("");
-      setTodayClockOut("");
-      localStorage.removeItem(`clockState_${todayStr}`);
-      localStorage.removeItem(`clockIn_${todayStr}`);
-      localStorage.removeItem(`clockOut_${todayStr}`);
-    }
-  }, [todayStr]);
+  }, []);
 
   useEffect(() => {
-    if (!selectedJob) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadShifts(selectedJob, currentDate);
-  }, [selectedJob, currentDate, loadShifts]);
+    loadShifts(currentDate);
+  }, [currentDate, loadShifts]);
 
-  const shiftMap = Object.fromEntries(shifts.map((s) => [s.date, s]));
+  const shiftMap = shifts.reduce<Record<string, Shift[]>>((acc, s) => {
+    (acc[s.date] ??= []).push(s);
+    return acc;
+  }, {});
+  const jobColorMap = Object.fromEntries(jobs.map((j, i) => [j.id, JOB_COLORS[i % JOB_COLORS.length]]));
+  const jobNameMap = Object.fromEntries(jobs.map((j) => [j.id, j.name]));
 
   // Clock In
   const handleClockIn = async () => {
     if (!selectedJob) return;
     const time = nowTime();
-    const existing = shiftMap[todayStr];
+    const existing = shiftMap[todayStr]?.find((s) => s.jobId === selectedJob.id);
     const shift = existing
       ? { ...existing, isWorkDay: true, clockIn: time }
       : defaultShift(todayStr, selectedJob.id, { clockIn: time });
@@ -88,14 +79,14 @@ export default function CalendarPage() {
     setClockState("clocked-in");
     localStorage.setItem(`clockState_${todayStr}`, "clocked-in");
     localStorage.setItem(`clockIn_${todayStr}`, time);
-    await loadShifts(selectedJob, currentDate);
+    await loadShifts(currentDate);
   };
 
   // Clock Out
   const handleClockOut = async () => {
     if (!selectedJob) return;
     const time = nowTime();
-    const existing = shiftMap[todayStr];
+    const existing = shiftMap[todayStr]?.find((s) => s.jobId === selectedJob.id);
     if (existing) {
       await db.shifts.put({ ...existing, clockOut: time });
     }
@@ -103,7 +94,7 @@ export default function CalendarPage() {
     setClockState("clocked-out");
     localStorage.setItem(`clockState_${todayStr}`, "clocked-out");
     localStorage.setItem(`clockOut_${todayStr}`, time);
-    await loadShifts(selectedJob, currentDate);
+    await loadShifts(currentDate);
   };
 
   const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
@@ -151,7 +142,7 @@ export default function CalendarPage() {
   const handleSave = useCallback(async (shift: Shift) => {
     if (!selectedJob) return;
     await db.shifts.put(shift);
-    await loadShifts(selectedJob, currentDate);
+    await loadShifts(currentDate);
     setSelectedDate(null);
     // If saving today after clocking out, mark as reviewed
     if (shift.date === todayStr) {
@@ -162,6 +153,7 @@ export default function CalendarPage() {
       }
     }
   }, [selectedJob, currentDate, loadShifts, todayStr]);
+
 
   const handleDelete = useCallback(async (shiftId: string) => {
     const shift = shifts.find((s) => s.id === shiftId);
@@ -194,10 +186,11 @@ export default function CalendarPage() {
 
   const DayCell = ({ date, compact = false }: { date: Date; compact?: boolean }) => {
     const key = formatDate(date);
-    const shift = shiftMap[key];
+    const dayShifts = shiftMap[key] ?? [];
+    const workedShifts = dayShifts.filter((s) => s.isWorkDay);
     const todayDay = isToday(date);
     const isPast = date < today && !todayDay;
-    const isWorkedDay = isPast && shift?.isWorkDay;
+    const isWorkedDay = isPast && workedShifts.length > 0;
     const isSat = date.getDay() === 6;
     const isFri = date.getDay() === 5;
     const isHoliday = !!holidays[key];
@@ -229,14 +222,15 @@ export default function CalendarPage() {
         <span className={`font-bold ${compact ? "text-sm" : "text-base"} ${todayDay ? "text-blue-600" : "text-gray-800"}`}>
           {date.getDate()}
         </span>
-        {shift?.isWorkDay && (
+        {workedShifts.map((s) => (
           <span
+            key={s.id}
             className="w-full rounded-md text-white text-[10px] font-medium text-center py-0.5 leading-tight"
-            style={{ backgroundColor: SHIFT_TYPE_COLORS[shift.shiftType] }}
+            style={{ backgroundColor: jobColorMap[s.jobId] }}
           >
-            {SHIFT_TYPE_LABELS[shift.shiftType]}
+            {jobNameMap[s.jobId]}
           </span>
-        )}
+        ))}
       </button>
     );
   };
@@ -247,17 +241,6 @@ export default function CalendarPage() {
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 pt-4 pb-3">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-bold text-gray-900">לוח שנה</h1>
-          {jobs.length > 1 && (
-            <select
-              value={selectedJob?.id ?? ""}
-              onChange={(e) => setSelectedJob(jobs.find((j) => j.id === e.target.value) ?? null)}
-              className="text-xs border border-gray-200 rounded-lg px-2 py-1 text-gray-700"
-            >
-              {jobs.map((j) => (
-                <option key={j.id} value={j.id}>{j.name}</option>
-              ))}
-            </select>
-          )}
         </div>
 
         {/* View toggle + navigation */}
@@ -386,7 +369,7 @@ export default function CalendarPage() {
         date={selectedDate}
         job={selectedJob}
         jobs={jobs}
-        existingShift={selectedDate ? (shiftMap[selectedDate] ?? null) : null}
+        existingShift={selectedDate ? (shiftMap[selectedDate]?.find((s) => s.jobId === selectedJob?.id) ?? null) : null}
         onClose={() => setSelectedDate(null)}
         onSave={handleSave}
         onDelete={handleDelete}

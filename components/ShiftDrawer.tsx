@@ -4,9 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { db } from "@/lib/db";
 import type { Job, Shift } from "@/lib/db";
 import { defaultShift } from "@/lib/db";
-import { SHIFT_TYPE_LABELS } from "@/lib/calculations";
-
-const shiftTypes = ["morning", "afternoon", "evening", "general"] as const;
 
 interface Props {
   date: string | null;
@@ -110,26 +107,6 @@ export default function ShiftDrawer({ date, job, jobs, existingShift, onClose, o
 
           {form.isWorkDay && (
             <div className="space-y-4">
-              {/* Shift type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">סוג משמרת</label>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {shiftTypes.map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => setForm({ ...form, shiftType: type })}
-                      className={`py-2 text-xs rounded-lg border font-medium transition-colors ${
-                        form.shiftType === type
-                          ? "border-blue-500 bg-blue-50 text-blue-600"
-                          : "border-gray-200 text-gray-600 hover:border-gray-300"
-                      }`}
-                    >
-                      {SHIFT_TYPE_LABELS[type]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Clock in / Clock out */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
