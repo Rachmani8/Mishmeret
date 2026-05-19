@@ -142,10 +142,13 @@ export default function ShiftDrawer({ date, job, jobs, holidayLabel, openShiftId
                   className="flex items-center gap-3 px-4 py-3 rounded-xl border"
                   style={{ backgroundColor: `${rowColor}18`, borderColor: rowColor }}
                 >
-                  <span className="text-sm text-gray-600 flex-none">
-                    {dayShifts.length > 1 ? `משמרת ${i + 1}` : "משמרת"}
-                    {jobs.length > 1 ? ` · ${jobNameMap[s.jobId] ?? ""}` : ""}
-                  </span>
+                  {(dayShifts.length > 1 || jobs.length > 1) && (
+                    <span className="text-sm text-gray-600 flex-none">
+                      {dayShifts.length > 1 ? `${i + 1}` : ""}
+                      {dayShifts.length > 1 && jobs.length > 1 ? " · " : ""}
+                      {jobs.length > 1 ? jobNameMap[s.jobId] ?? "" : ""}
+                    </span>
+                  )}
                   <span className="text-sm font-bold text-gray-900 flex-1 text-center">
                     {s.clockIn} → {s.clockOut}
                   </span>
