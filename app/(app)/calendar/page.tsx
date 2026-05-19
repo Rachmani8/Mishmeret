@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { db } from "@/lib/db";
 import type { Job, Shift } from "@/lib/db";
 import { defaultShift } from "@/lib/db";
@@ -30,7 +30,13 @@ export default function CalendarPage() {
   const [selectedDateHoliday, setSelectedDateHoliday] = useState<string | undefined>(undefined);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [clockJob, setClockJob] = useState<Job | null>(null);
-  const [clockShiftId, setClockShiftId] = useState<string | null>(null);
+  const [clockShiftId, setClockShiftId] = useState<string | null>(
+    () => typeof window !== "undefined" ? localStorage.getItem(`clockShiftId_${todayStr}`) : null
+  );
+  const [firstClockShiftId, setFirstClockShiftId] = useState<string | null>(
+    () => typeof window !== "undefined" ? localStorage.getItem(`firstClockShiftId_${todayStr}`) : null
+  );
+  const [drawerShiftId, setDrawerShiftId] = useState<string | null>(null);
   const [infoOpen, setInfoOpen] = useState(false);
 
   // Clock in/out — initialized from localStorage on mount (guard for SSR)
@@ -57,10 +63,13 @@ export default function CalendarPage() {
     });
   }, []);
 
+  const shiftsLoadedRef = useRef(false);
+
   const loadShifts = useCallback(async (date: Date) => {
     const prefix = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     const data = await db.shifts.filter((s) => s.date.startsWith(prefix)).toArray();
     setShifts(data);
+    shiftsLoadedRef.current = true;
   }, []);
 
   useEffect(() => {
@@ -74,16 +83,48 @@ export default function CalendarPage() {
   const jobColorMap = Object.fromEntries(jobs.map((j, i) => [j.id, j.color ?? JOB_COLORS[i % JOB_COLORS.length]]));
   const jobNameMap = Object.fromEntries(jobs.map((j) => [j.id, j.name]));
 
+  // If tracked shift IDs no longer exist in DB (e.g. jobs/shifts deleted), reset clock state
+  useEffect(() => {
+    if (!shiftsLoadedRef.current) return; // wait for first real load before validating
+    if (clockState === "idle" || clockState === "clocked-in") return;
+    const todayShifts = shiftMap[todayStr] ?? [];
+    const shift1Exists = clockShiftId ? todayShifts.some((s) => s.id === clockShiftId) : false;
+    const shift2Exists = firstClockShiftId ? todayShifts.some((s) => s.id === firstClockShiftId) : false;
+    if (!shift1Exists && !shift2Exists) {
+      setClockState("idle");
+      setClockShiftId(null);
+      setFirstClockShiftId(null);
+      setTodayClockIn("");
+      setTodayClockOut("");
+      localStorage.removeItem(`clockState_${todayStr}`);
+      localStorage.removeItem(`clockIn_${todayStr}`);
+      localStorage.removeItem(`clockOut_${todayStr}`);
+      localStorage.removeItem(`clockShiftId_${todayStr}`);
+      localStorage.removeItem(`firstClockShiftId_${todayStr}`);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shifts, todayStr]);
+
   // Clock In
   const handleClockIn = async () => {
     if (!clockJob) return;
     const time = nowTime();
-    const existing = shiftMap[todayStr]?.find((s) => s.jobId === clockJob.id);
-    const shift = existing
-      ? { ...existing, isWorkDay: true, clockIn: time }
-      : defaultShift(todayStr, clockJob.id, { clockIn: time });
+    // In reviewed state, always start a fresh shift and remember the first shift's ID
+    const shift = clockState === "reviewed"
+      ? defaultShift(todayStr, clockJob.id, { clockIn: time })
+      : (() => {
+          const existing = shiftMap[todayStr]?.find((s) => s.jobId === clockJob.id);
+          return existing
+            ? { ...existing, isWorkDay: true, clockIn: time }
+            : defaultShift(todayStr, clockJob.id, { clockIn: time });
+        })();
+    if (clockState === "reviewed") {
+      setFirstClockShiftId(clockShiftId);
+      if (clockShiftId) localStorage.setItem(`firstClockShiftId_${todayStr}`, clockShiftId);
+    }
     await db.shifts.put(shift);
     setClockShiftId(shift.id);
+    localStorage.setItem(`clockShiftId_${todayStr}`, shift.id);
     setTodayClockIn(time);
     setClockState("clocked-in");
     localStorage.setItem(`clockState_${todayStr}`, "clocked-in");
@@ -95,7 +136,10 @@ export default function CalendarPage() {
   const handleClockOut = async () => {
     if (!clockJob) return;
     const time = nowTime();
-    const existing = shiftMap[todayStr]?.find((s) => s.jobId === clockJob.id);
+    // Use clockShiftId to update the exact shift started by the current clock-in
+    const existing = clockShiftId
+      ? shiftMap[todayStr]?.find((s) => s.id === clockShiftId)
+      : shiftMap[todayStr]?.find((s) => s.jobId === clockJob.id);
     if (existing) {
       await db.shifts.put({ ...existing, clockOut: time });
     }
@@ -174,16 +218,44 @@ export default function CalendarPage() {
   const handleDelete = useCallback(async (shiftId: string) => {
     const shift = shifts.find((s) => s.id === shiftId);
     setShifts((prev) => prev.filter((s) => s.id !== shiftId));
-    if (shift?.date === todayStr) {
+    if (shift?.date !== todayStr) return;
+
+    const isFirst = shiftId === firstClockShiftId;
+    const isSecond = shiftId === clockShiftId;
+
+    if (isFirst && clockShiftId) {
+      // Deleted first shift — second shift remains, promote it to the only reviewed shift
+      setFirstClockShiftId(null);
+      localStorage.removeItem(`firstClockShiftId_${todayStr}`);
+      // clockShiftId + clockState "reviewed" stay as-is
+    } else if (isSecond && firstClockShiftId) {
+      // Deleted second shift — first shift remains, demote it to the single reviewed shift
+      const remaining = shifts.find((s) => s.id === firstClockShiftId);
+      setClockShiftId(firstClockShiftId);
+      localStorage.setItem(`clockShiftId_${todayStr}`, firstClockShiftId);
+      setFirstClockShiftId(null);
+      localStorage.removeItem(`firstClockShiftId_${todayStr}`);
+      if (remaining) {
+        setTodayClockIn(remaining.clockIn);
+        setTodayClockOut(remaining.clockOut);
+        localStorage.setItem(`clockIn_${todayStr}`, remaining.clockIn);
+        localStorage.setItem(`clockOut_${todayStr}`, remaining.clockOut);
+      }
+      // clockState stays "reviewed"
+    } else {
+      // Last tracked shift deleted — reset to idle
       setClockState("idle");
       setClockShiftId(null);
+      setFirstClockShiftId(null);
       setTodayClockIn("");
       setTodayClockOut("");
       localStorage.removeItem(`clockState_${todayStr}`);
       localStorage.removeItem(`clockIn_${todayStr}`);
       localStorage.removeItem(`clockOut_${todayStr}`);
+      localStorage.removeItem(`clockShiftId_${todayStr}`);
+      localStorage.removeItem(`firstClockShiftId_${todayStr}`);
     }
-  }, [shifts, todayStr]);
+  }, [shifts, todayStr, clockShiftId, firstClockShiftId]);
 
   const headerLabel =
     viewMode === "month"
@@ -396,32 +468,124 @@ export default function CalendarPage() {
             </div>
           )}
 
-          {clockState === "reviewed" && (
-            <div className="flex items-center justify-start gap-2">
-              <div
-                className="px-3 py-2 rounded-2xl"
-                style={{ backgroundColor: `${selectedJob?.color ?? "#EF4444"}1a` }}
-              >
-                {selectedJob && (
-                  <div className="text-xs font-semibold leading-tight" style={{ color: selectedJob.color }}>
-                    {selectedJob.name}
+          {clockState === "reviewed" && (() => {
+            const editIcon = (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3.5 h-3.5">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            );
+
+            // Derive each shift's job directly from saved shift data
+            const shiftJobFor = (shiftId: string | null) => {
+              const s = shiftId ? (shiftMap[todayStr] ?? []).find((x) => x.id === shiftId) : null;
+              return s ? jobs.find((j) => j.id === s.jobId) ?? null : null;
+            };
+
+            // Two shifts = firstClockShiftId was set when starting the second clock-in
+            if (firstClockShiftId && clockShiftId && firstClockShiftId !== clockShiftId) {
+              const pairs: Array<{ shiftId: string }> = [
+                { shiftId: firstClockShiftId },
+                { shiftId: clockShiftId },
+              ];
+              return (
+                <div className="flex items-center gap-2">
+                  {pairs.map(({ shiftId }, i) => {
+                    const s = (shiftMap[todayStr] ?? []).find((x) => x.id === shiftId);
+                    const j = shiftJobFor(shiftId);
+                    const color = j?.color ?? "#EF4444";
+                    if (!s) return null;
+                    return (
+                      <div key={i} className="flex items-center gap-1.5 flex-1">
+                        <div
+                          className="flex-1 px-3 py-2 rounded-2xl"
+                          style={{ backgroundColor: `${color}1a` }}
+                        >
+                          {j && (
+                            <div className="text-xs font-semibold leading-tight" style={{ color }}>
+                              {j.name}
+                            </div>
+                          )}
+                          <div className="text-xs text-gray-400">משמרת {i + 1}</div>
+                          <div className="text-sm font-bold text-gray-900" dir="ltr">{s.clockIn} → {s.clockOut}</div>
+                        </div>
+                        <button
+                          onClick={() => { setDrawerShiftId(shiftId); setSelectedDate(todayStr); }}
+                          aria-label="עריכה"
+                          className="flex-none w-7 h-7 rounded-xl bg-orange-500 hover:bg-orange-600 flex items-center justify-center transition-colors text-white"
+                        >
+                          {editIcon}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            }
+
+            // Single completed shift — derive job from saved data, not from clockJob picker
+            const singleJob = shiftJobFor(clockShiftId) ?? clockJob;
+            const singleColor = singleJob?.color ?? "#EF4444";
+            return (
+              <div className="flex items-center justify-between gap-2">
+                {/* Right: reviewed box + edit */}
+                <div className="flex items-center gap-2">
+                  <div
+                    className="px-3 py-2 rounded-2xl"
+                    style={{ backgroundColor: `${singleColor}1a` }}
+                  >
+                    {singleJob && (
+                      <div className="text-xs font-semibold leading-tight" style={{ color: singleColor }}>
+                        {singleJob.name}
+                      </div>
+                    )}
+                    <div className="text-xs text-gray-400">היום</div>
+                    <div className="text-sm font-bold text-gray-900" dir="ltr">{todayClockIn} → {todayClockOut}</div>
                   </div>
-                )}
-                <div className="text-xs text-gray-400">היום</div>
-                <div className="text-sm font-bold text-gray-900" dir="ltr">{todayClockIn} → {todayClockOut}</div>
+                  <button
+                    onClick={() => setSelectedDate(todayStr)}
+                    aria-label="עריכה"
+                    className="flex-none w-7 h-7 rounded-xl bg-orange-500 hover:bg-orange-600 flex items-center justify-center transition-colors text-white"
+                  >
+                    {editIcon}
+                  </button>
+                </div>
+
+                {/* Left: new clock-in picker + button */}
+                <div className="flex flex-col gap-1.5 min-w-[120px]">
+                  {jobs.length > 1 && (
+                    <div className="flex gap-1">
+                      {jobs.map((j) => {
+                        const isActive = clockJob?.id === j.id;
+                        return (
+                          <button
+                            key={j.id}
+                            onClick={() => setClockJob(j)}
+                            style={isActive ? { backgroundColor: j.color, borderColor: j.color } : undefined}
+                            className={`flex-1 py-0.5 text-xs font-medium rounded-lg border transition-colors ${
+                              isActive ? "text-white" : "border-gray-200 text-gray-600"
+                            }`}
+                          >
+                            {j.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <button
+                    onClick={handleClockIn}
+                    className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    כניסה למשמרת נוספת
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => setSelectedDate(todayStr)}
-                aria-label="ווידוא יום"
-                className="flex-none w-7 h-7 rounded-xl bg-orange-500 hover:bg-orange-600 flex items-center justify-center transition-colors text-white"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3.5 h-3.5">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-              </button>
-            </div>
-          )}
+            );
+          })()}
         </div>
       )}
 
@@ -431,8 +595,12 @@ export default function CalendarPage() {
         job={selectedJob}
         jobs={jobs}
         holidayLabel={selectedDateHoliday}
-        openShiftId={(clockState === "clocked-out" || clockState === "reviewed") && selectedDate === todayStr ? clockShiftId : null}
-        onClose={() => { setSelectedDate(null); setSelectedDateHoliday(undefined); loadShifts(currentDate); }}
+        openShiftId={
+          selectedDate === todayStr
+            ? drawerShiftId ?? ((clockState === "clocked-out" || clockState === "reviewed") ? clockShiftId : null)
+            : null
+        }
+        onClose={() => { setSelectedDate(null); setSelectedDateHoliday(undefined); setDrawerShiftId(null); loadShifts(currentDate); }}
         onSave={handleSave}
         onDelete={handleDelete}
       />
