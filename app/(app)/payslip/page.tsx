@@ -55,9 +55,7 @@ function Row({
   const walletImpact = diff !== null ? (isNegative ? -diff : diff) : null;
   const isGood = walletImpact !== null && walletImpact > 0;
 
-  const hh = hours !== undefined ? Math.floor(hours) : 0;
-  const mm = hours !== undefined ? Math.round((hours - hh) * 60) : 0;
-  const hoursLabel = hours !== undefined ? `${hh}:${String(mm).padStart(2, "0")}` : null;
+  const hoursLabel = hours !== undefined ? hours.toFixed(2) : null;
 
   return (
     <div className={`flex items-center gap-2 py-2.5 border-b border-gray-50 last:border-0 ${bold ? "border-t border-gray-200 mt-1 pt-3" : ""}`}>
@@ -188,7 +186,7 @@ export default function PayslipPage() {
             <div className="bg-green-50 rounded-2xl p-3 text-center">
               <div className="text-xs text-green-400 mb-1">שעות</div>
               <div className="text-lg font-bold text-green-600">
-                {Math.floor(payslip.totalHours)}:{String(Math.round((payslip.totalHours % 1) * 60)).padStart(2, "0")}
+                {payslip.totalHours.toFixed(2)}
               </div>
             </div>
             <div className="bg-purple-50 rounded-2xl p-3 text-center">

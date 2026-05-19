@@ -272,9 +272,7 @@ export function formatCurrency(amount: number): string {
 }
 
 export function formatHours(hours: number): string {
-  const h = Math.floor(hours);
-  const m = Math.round((hours - h) * 60);
-  return `${h}:${m.toString().padStart(2, "0")}`;
+  return hours.toFixed(2);
 }
 
 export function getMonthShifts(shifts: Shift[], year: number, month: number): Shift[] {
