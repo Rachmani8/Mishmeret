@@ -44,7 +44,7 @@ export default function ShiftDrawer({ date, job, jobs, existingShift, onClose, o
   const dayLabel = `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()} — יום ${dayNames[dateObj.getDay()]}`;
 
   const handleSave = () => {
-    onSave(form);
+    onSave({ ...form, isWorkDay: true });
   };
 
   return (
@@ -92,73 +92,58 @@ export default function ShiftDrawer({ date, job, jobs, existingShift, onClose, o
             </div>
           )}
 
-          {/* Is work day toggle */}
-          <div className="flex items-center justify-between py-3 mb-4">
-            <label className="text-sm font-medium text-gray-700">יום עבודה</label>
-            <button
-              onClick={() => setForm({ ...form, isWorkDay: !form.isWorkDay })}
-              className={`relative w-12 h-6 rounded-full transition-colors ${form.isWorkDay ? "bg-blue-600" : "bg-gray-200"}`}
-            >
-              <span
-                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${form.isWorkDay ? "right-0.5" : "left-0.5"}`}
-              />
-            </button>
-          </div>
-
-          {form.isWorkDay && (
-            <div className="space-y-4">
-              {/* Clock in / Clock out */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">שעת כניסה</label>
-                  <input
-                    type="time"
-                    value={form.clockIn}
-                    onChange={(e) => setForm({ ...form, clockIn: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">שעת יציאה</label>
-                  <input
-                    type="time"
-                    value={form.clockOut}
-                    onChange={(e) => setForm({ ...form, clockOut: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
-                  />
-                </div>
-              </div>
-
-              {/* Tips */}
+          <div className="space-y-4">
+            {/* Clock in / Clock out */}
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">טיפים (₪)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">שעת כניסה</label>
                 <input
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={form.tips ?? 0}
-                  onChange={(e) => setForm({ ...form, tips: Number(e.target.value) || 0 })}
-                  onFocus={(e) => e.target.select()}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="0"
+                  type="time"
+                  value={form.clockIn}
+                  onChange={(e) => setForm({ ...form, clockIn: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
                 />
-                <p className="text-xs text-gray-400 mt-1">מזומן שהתקבל ישירות — לא נכלל בחישוב השכר</p>
               </div>
-
-              {/* Notes */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">הערות</label>
-                <textarea
-                  rows={2}
-                  maxLength={500}
-                  value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  placeholder="הוסף/י הערה..."
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">שעת יציאה</label>
+                <input
+                  type="time"
+                  value={form.clockOut}
+                  onChange={(e) => setForm({ ...form, clockOut: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
                 />
               </div>
             </div>
-          )}
+
+            {/* Tips */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">טיפים (₪)</label>
+              <input
+                type="number"
+                min={0}
+                step={1}
+                value={form.tips ?? 0}
+                onChange={(e) => setForm({ ...form, tips: Number(e.target.value) || 0 })}
+                onFocus={(e) => e.target.select()}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="0"
+              />
+              <p className="text-xs text-gray-400 mt-1">מזומן שהתקבל ישירות — לא נכלל בחישוב השכר</p>
+            </div>
+
+            {/* Notes */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">הערות</label>
+              <textarea
+                rows={2}
+                maxLength={500}
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                placeholder="הוסף/י הערה..."
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              />
+            </div>
+          </div>
 
           {/* Actions */}
           <div className="flex gap-3 mt-6 pb-2">
