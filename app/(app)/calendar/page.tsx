@@ -297,7 +297,7 @@ export default function CalendarPage() {
       {jobs.length === 0 && (
         <div className="mx-4 mt-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between gap-3">
           <p className="text-sm text-amber-800">לא הוגדרה משרה — לא ניתן לפתוח ימים</p>
-          <a href="/settings" className="text-xs font-semibold text-amber-700 underline whitespace-nowrap">הגדר משרה</a>
+          <a href="/settings" className="text-xs font-semibold text-amber-700 underline whitespace-nowrap">הגדר/י משרה</a>
         </div>
       )}
 

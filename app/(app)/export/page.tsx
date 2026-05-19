@@ -66,7 +66,7 @@ export default function ExportPage() {
 
   const handleExport = async () => {
     if (!selectedJob || selectedList.length === 0) {
-      alert("בחר לפחות חודש אחד לייצוא");
+      alert("בחר/י לפחות חודש אחד לייצוא");
       return;
     }
     setLoading(true);
@@ -131,7 +131,7 @@ export default function ExportPage() {
 
   const handleExportHours = async () => {
     if (!selectedJob || selectedList.length === 0) {
-      alert("בחר לפחות חודש אחד לייצוא");
+      alert("בחר/י לפחות חודש אחד לייצוא");
       return;
     }
     setLoadingHours(true);
@@ -185,7 +185,7 @@ export default function ExportPage() {
       </div>
 
       {jobs.length === 0 && (
-        <div className="flex-1 flex items-center justify-center text-sm text-gray-400">הגדר משרה תחילה</div>
+        <div className="flex-1 flex items-center justify-center text-sm text-gray-400">הגדר/י משרה תחילה</div>
       )}
 
       {jobs.length > 0 && (
@@ -218,9 +218,9 @@ export default function ExportPage() {
             </div>
 
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-gray-700">בחר חודשים</label>
+              <label className="text-sm font-medium text-gray-700">בחר/י חודשים</label>
               <div className="flex gap-2">
-                <button onClick={selectAll} className="text-xs text-blue-600 hover:underline">בחר הכל</button>
+                <button onClick={selectAll} className="text-xs text-blue-600 hover:underline">בחר/י הכל</button>
                 <span className="text-gray-300">|</span>
                 <button onClick={selectNone} className="text-xs text-gray-500 hover:underline">נקה הכל</button>
               </div>

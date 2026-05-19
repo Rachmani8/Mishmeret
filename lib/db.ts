@@ -13,8 +13,9 @@ export interface Job {
   commuteDaily: number;            // ₪ per day
   taxCreditPoints: number;         // default 2.25
   pensionEnabled: boolean;
-  pensionEmployeePercent: number;  // default 6
-  pensionEmployerPercent: number;  // default 6.5
+  pensionEmployeePercent: number;   // default 6
+  pensionEmployerPercent: number;   // default 6.5 (תגמולים)
+  pensionSeverancePercent: number;  // default 6   (פיצויים)
 }
 
 export interface Shift {
@@ -101,6 +102,7 @@ export function defaultJob(partial?: Partial<Job>): Job {
     pensionEnabled: true,
     pensionEmployeePercent: 6,
     pensionEmployerPercent: 6.5,
+    pensionSeverancePercent: 6,
     ...partial,
   };
 }

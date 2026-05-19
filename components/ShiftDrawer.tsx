@@ -143,7 +143,7 @@ export default function ShiftDrawer({ date, job, existingShift, onClose, onSave,
                   maxLength={500}
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  placeholder="הוסף הערה..."
+                  placeholder="הוסף/י הערה..."
                   className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 />
               </div>
@@ -157,14 +157,14 @@ export default function ShiftDrawer({ date, job, existingShift, onClose, onSave,
                 onClick={() => { onDelete(existingShift.id); onClose(); }}
                 className="flex-none px-4 py-2.5 text-sm font-medium text-red-500 border border-red-300 rounded-xl hover:bg-red-50 transition-colors"
               >
-                מחק
+                מחק/י
               </button>
             )}
             <button
               onClick={handleSave}
               className="flex-1 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors"
             >
-              שמור
+              שמור/י
             </button>
           </div>
         </div>

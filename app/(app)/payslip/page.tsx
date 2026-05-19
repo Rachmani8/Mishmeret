@@ -170,7 +170,7 @@ export default function PayslipPage() {
       </div>
 
       {jobs.length === 0 && (
-        <div className="flex-1 flex items-center justify-center text-sm text-gray-400">הגדר משרה תחילה</div>
+        <div className="flex-1 flex items-center justify-center text-sm text-gray-400">הגדר/י משרה תחילה</div>
       )}
 
       {jobs.length > 0 && !payslip && (
@@ -233,7 +233,7 @@ export default function PayslipPage() {
                 <span className="text-orange-200 text-xs">בפועל:</span>
                 <input
                   type="number"
-                  placeholder="הזן סכום"
+                  placeholder="הזן/י סכום"
                   value={actual.grossTotal}
                   onChange={(e) => setActualField("grossTotal", e.target.value)}
                   onFocus={(e) => e.target.select()}
@@ -276,13 +276,13 @@ export default function PayslipPage() {
             onClick={() => setShowValidator(!showValidator)}
             className="w-full py-3 border-2 border-dashed border-gray-200 rounded-2xl text-sm font-medium text-gray-500 hover:border-blue-300 hover:text-blue-600 transition-colors"
           >
-            {showValidator ? "סגור בדיקת תלוש" : "בדיקת תלוש בפועל"}
+            {showValidator ? "סגור/י בדיקת תלוש" : "בדיקת תלוש בפועל"}
           </button>
 
           {showValidator && (
             <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
               <p className="text-xs text-amber-700 font-medium mb-1">הנחיות:</p>
-              <p className="text-xs text-amber-600">הזן את הסכומים מהתלוש שלך בעמודה &quot;בפועל&quot;. הערכים יסומנו בירוק (לטובתך) או אדום (לרעתך) אם יש פערים משמעותיים.</p>
+              <p className="text-xs text-amber-600">הזן/י את הסכומים מהתלוש שלך בעמודה &quot;בפועל&quot;. הערכים יסומנו בירוק (לטובתך) או אדום (לרעתך) אם יש פערים משמעותיים.</p>
             </div>
           )}
         </div>

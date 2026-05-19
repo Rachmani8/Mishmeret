@@ -101,7 +101,7 @@ export default function SummaryPage() {
       {/* No job */}
       {jobs.length === 0 && (
         <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
-          הגדר משרה תחילה
+          הגדר/י משרה תחילה
         </div>
       )}
 
