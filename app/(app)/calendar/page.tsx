@@ -29,6 +29,7 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedDateHoliday, setSelectedDateHoliday] = useState<string | undefined>(undefined);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [clockJob, setClockJob] = useState<Job | null>(null);
 
   // Clock in/out — initialized from localStorage on mount (guard for SSR)
   const [clockState, setClockState] = useState<ClockState>(
@@ -46,7 +47,10 @@ export default function CalendarPage() {
   useEffect(() => {
     db.jobs.toArray().then((j) => {
       setJobs(j);
-      if (j.length > 0) setSelectedJob(j[0]);
+      if (j.length > 0) {
+        setSelectedJob(j[0]);
+        setClockJob(j[0]);
+      }
     });
   }, []);
 
@@ -69,12 +73,12 @@ export default function CalendarPage() {
 
   // Clock In
   const handleClockIn = async () => {
-    if (!selectedJob) return;
+    if (!clockJob) return;
     const time = nowTime();
-    const existing = shiftMap[todayStr]?.find((s) => s.jobId === selectedJob.id);
+    const existing = shiftMap[todayStr]?.find((s) => s.jobId === clockJob.id);
     const shift = existing
       ? { ...existing, isWorkDay: true, clockIn: time }
-      : defaultShift(todayStr, selectedJob.id, { clockIn: time });
+      : defaultShift(todayStr, clockJob.id, { clockIn: time });
     await db.shifts.put(shift);
     setTodayClockIn(time);
     setClockState("clocked-in");
@@ -85,9 +89,9 @@ export default function CalendarPage() {
 
   // Clock Out
   const handleClockOut = async () => {
-    if (!selectedJob) return;
+    if (!clockJob) return;
     const time = nowTime();
-    const existing = shiftMap[todayStr]?.find((s) => s.jobId === selectedJob.id);
+    const existing = shiftMap[todayStr]?.find((s) => s.jobId === clockJob.id);
     if (existing) {
       await db.shifts.put({ ...existing, clockOut: time });
     }
@@ -318,16 +322,38 @@ export default function CalendarPage() {
       {jobs.length > 0 && (
         <div className="sticky bottom-16 z-20 bg-white border-t border-gray-100 px-4 py-3">
           {clockState === "idle" && (
-            <button
-              onClick={handleClockIn}
-              className="w-full py-3.5 bg-green-500 hover:bg-green-600 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-5 h-5">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              כניסה לעבודה
-            </button>
+            <div className="flex flex-col gap-2">
+              {jobs.length > 1 && (
+                <div className="flex gap-2">
+                  {jobs.map((j) => {
+                    const isActive = clockJob?.id === j.id;
+                    const color = j.color ?? "#EF4444";
+                    return (
+                      <button
+                        key={j.id}
+                        onClick={() => setClockJob(j)}
+                        style={isActive ? { backgroundColor: color, borderColor: color } : undefined}
+                        className={`flex-1 py-1.5 text-sm font-medium rounded-xl border transition-colors ${
+                          isActive ? "text-white" : "border-gray-200 text-gray-600 hover:border-gray-300"
+                        }`}
+                      >
+                        {j.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <button
+                onClick={handleClockIn}
+                className="w-full py-3.5 bg-green-500 hover:bg-green-600 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-5 h-5">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                כניסה לעבודה
+              </button>
+            </div>
           )}
 
           {clockState === "clocked-in" && (
@@ -348,7 +374,7 @@ export default function CalendarPage() {
             </div>
           )}
 
-          {(clockState === "clocked-out" || clockState === "reviewed") && (
+          {clockState === "clocked-out" && (
             <div className="flex items-center gap-3">
               <div className="flex-1">
                 <div className="text-xs text-gray-400">היום</div>
@@ -356,17 +382,40 @@ export default function CalendarPage() {
               </div>
               <button
                 onClick={() => setSelectedDate(todayStr)}
-                className={`flex-1 py-3.5 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors ${
-                  clockState === "reviewed"
-                    ? "bg-blue-600 hover:bg-blue-700"
-                    : "bg-amber-500 hover:bg-amber-600"
-                }`}
+                className="flex-1 py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-5 h-5">
                   <path d="M9 11l3 3L22 4" />
                   <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                 </svg>
-                בדיקת יום
+                ווידוא יום
+              </button>
+            </div>
+          )}
+
+          {clockState === "reviewed" && (
+            <div className="flex items-center justify-start gap-2">
+              <div
+                className="px-3 py-2 rounded-2xl"
+                style={{ backgroundColor: `${selectedJob?.color ?? "#EF4444"}1a` }}
+              >
+                {selectedJob && (
+                  <div className="text-xs font-semibold leading-tight" style={{ color: selectedJob.color }}>
+                    {selectedJob.name}
+                  </div>
+                )}
+                <div className="text-xs text-gray-400">היום</div>
+                <div className="text-sm font-bold text-gray-900">{todayClockIn} → {todayClockOut}</div>
+              </div>
+              <button
+                onClick={() => setSelectedDate(todayStr)}
+                aria-label="ווידוא יום"
+                className="flex-none w-7 h-7 rounded-xl bg-orange-500 hover:bg-orange-600 flex items-center justify-center transition-colors text-white"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3.5 h-3.5">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
               </button>
             </div>
           )}
