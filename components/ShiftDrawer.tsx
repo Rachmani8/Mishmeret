@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
+import { db } from "@/lib/db";
 import type { Job, Shift } from "@/lib/db";
 import { defaultShift } from "@/lib/db";
 import { SHIFT_TYPE_LABELS } from "@/lib/calculations";
@@ -10,23 +11,36 @@ const shiftTypes = ["morning", "afternoon", "evening", "general"] as const;
 interface Props {
   date: string | null;
   job: Job | null;
+  jobs: Job[];
   existingShift: Shift | null;
   onClose: () => void;
   onSave: (shift: Shift) => void;
   onDelete: (shiftId: string) => void;
 }
 
-export default function ShiftDrawer({ date, job, existingShift, onClose, onSave, onDelete }: Props) {
+export default function ShiftDrawer({ date, job, jobs, existingShift, onClose, onSave, onDelete }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const [activeJob, setActiveJob] = useState<Job | null>(null);
+  const [activeShift, setActiveShift] = useState<Shift | null>(null);
   const [form, setForm] = useState<Shift | null>(null);
 
   useEffect(() => {
     if (!date || !job) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setActiveJob(job);
+    setActiveShift(existingShift);
     setForm(existingShift ? { ...existingShift } : defaultShift(date, job.id));
   }, [date, job, existingShift]);
 
-  if (!date || !job || !form) return null;
+  const switchJob = (j: Job) => {
+    if (!date) return;
+    setActiveJob(j);
+    db.shifts.where({ date, jobId: j.id }).first().then((s) => {
+      setActiveShift(s ?? null);
+      setForm(s ? { ...s } : defaultShift(date, j.id));
+    });
+  };
+
+  if (!date || !activeJob || !form) return null;
 
   const dateObj = new Date(date + "T00:00:00");
   const dayNames = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
@@ -61,6 +75,25 @@ export default function ShiftDrawer({ date, job, existingShift, onClose, onSave,
               </svg>
             </button>
           </div>
+
+          {/* Job picker — only when multiple jobs exist */}
+          {jobs.length > 1 && (
+            <div className="flex gap-2 mb-4">
+              {jobs.map((j) => (
+                <button
+                  key={j.id}
+                  onClick={() => switchJob(j)}
+                  className={`flex-1 py-2 text-sm font-medium rounded-xl border transition-colors ${
+                    activeJob?.id === j.id
+                      ? "bg-blue-600 border-blue-600 text-white"
+                      : "border-gray-200 text-gray-600 hover:border-gray-300"
+                  }`}
+                >
+                  {j.name}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Is work day toggle */}
           <div className="flex items-center justify-between py-3 mb-4">
@@ -152,9 +185,9 @@ export default function ShiftDrawer({ date, job, existingShift, onClose, onSave,
 
           {/* Actions */}
           <div className="flex gap-3 mt-6 pb-2">
-            {existingShift && (
+            {activeShift && (
               <button
-                onClick={() => { onDelete(existingShift.id); onClose(); }}
+                onClick={() => { onDelete(activeShift.id); onClose(); }}
                 className="flex-none px-4 py-2.5 text-sm font-medium text-red-500 border border-red-300 rounded-xl hover:bg-red-50 transition-colors"
               >
                 מחק/י

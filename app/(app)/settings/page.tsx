@@ -310,19 +310,6 @@ export default function SettingsPage() {
 
       <div className="p-4 space-y-4">
 
-        {/* Add job button — only when no job exists */}
-        {jobs.length === 0 && (
-          <button
-            onClick={addJob}
-            className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            הוסף/י משרה
-          </button>
-        )}
-
         {jobs.map((job) => (
           <div key={job.id}>
             {expandedId === job.id ? (
@@ -340,6 +327,17 @@ export default function SettingsPage() {
             )}
           </div>
         ))}
+
+        {/* Add job button */}
+        <button
+          onClick={addJob}
+          className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          הוסף/י משרה
+        </button>
 
         {/* Shabbat city settings */}
         <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">

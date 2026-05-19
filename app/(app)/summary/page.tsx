@@ -70,13 +70,21 @@ export default function SummaryPage() {
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-bold text-gray-900">סיכום חודשי</h1>
           {jobs.length > 1 && (
-            <select
-              value={selectedJob?.id ?? ""}
-              onChange={(e) => setSelectedJob(jobs.find((j) => j.id === e.target.value) ?? null)}
-              className="text-xs border border-gray-200 rounded-lg px-2 py-1 text-gray-700"
-            >
-              {jobs.map((j) => <option key={j.id} value={j.id}>{j.name}</option>)}
-            </select>
+            <div className="flex gap-1.5">
+              {jobs.map((j) => (
+                <button
+                  key={j.id}
+                  onClick={() => setSelectedJob(j)}
+                  className={`px-3 py-1 text-xs font-medium rounded-lg border transition-colors ${
+                    selectedJob?.id === j.id
+                      ? "bg-blue-600 border-blue-600 text-white"
+                      : "border-gray-200 text-gray-600 hover:border-gray-300"
+                  }`}
+                >
+                  {j.name}
+                </button>
+              ))}
+            </div>
           )}
         </div>
 

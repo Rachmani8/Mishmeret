@@ -150,12 +150,7 @@ export default function CalendarPage() {
 
   const handleSave = useCallback(async (shift: Shift) => {
     if (!selectedJob) return;
-    const existing = shiftMap[shift.date];
-    if (existing) {
-      await db.shifts.put({ ...shift, id: existing.id });
-    } else {
-      await db.shifts.put(shift);
-    }
+    await db.shifts.put(shift);
     await loadShifts(selectedJob, currentDate);
     setSelectedDate(null);
     // If saving today after clocking out, mark as reviewed
@@ -166,7 +161,7 @@ export default function CalendarPage() {
         localStorage.setItem(`clockState_${todayStr}`, "reviewed");
       }
     }
-  }, [selectedJob, shiftMap, currentDate, loadShifts, todayStr]);
+  }, [selectedJob, currentDate, loadShifts, todayStr]);
 
   const handleDelete = useCallback(async (shiftId: string) => {
     const shift = shifts.find((s) => s.id === shiftId);
@@ -390,6 +385,7 @@ export default function CalendarPage() {
       <ShiftDrawer
         date={selectedDate}
         job={selectedJob}
+        jobs={jobs}
         existingShift={selectedDate ? (shiftMap[selectedDate] ?? null) : null}
         onClose={() => setSelectedDate(null)}
         onSave={handleSave}
