@@ -246,7 +246,7 @@ export default function SettingsPage() {
   const [syncStatus, setSyncStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [shabbatOpen, setShabbatOpen] = useState(false);
   const [hasSynced, setHasSynced] = useState(true);
-  const [infoVisible, setInfoVisible] = useState(() =>
+  const [infoOpen, setInfoOpen] = useState(() =>
     typeof window !== "undefined" ? localStorage.getItem("settingsInfoDismissed") !== "1" : true
   );
 
@@ -314,42 +314,16 @@ export default function SettingsPage() {
       <div className="px-4 pt-4 pb-3 border-b border-gray-100">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900">הגדרות משרה</h1>
-          {!infoVisible && (
-            <button
-              onClick={() => { setInfoVisible(true); localStorage.removeItem("settingsInfoDismissed"); }}
-              className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 hover:bg-orange-100 flex items-center justify-center text-sm font-bold transition-colors"
-            >
-              ?
-            </button>
-          )}
+          <button
+            onClick={() => { setInfoOpen(true); localStorage.removeItem("settingsInfoDismissed"); }}
+            className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 hover:bg-orange-100 flex items-center justify-center text-sm font-bold transition-colors"
+          >
+            ?
+          </button>
         </div>
         <p className="text-sm text-gray-500 mt-0.5">הגדר/י את פרטי המשרה לחישוב שכר מדויק</p>
       </div>
 
-      {/* Info card */}
-      {infoVisible && (
-        <div className="mx-4 mt-4 bg-orange-50 border border-orange-100 rounded-2xl px-4 py-4 relative">
-            <p className="text-sm font-bold text-orange-900 mb-2">ברוכ/ה הבא/ה להגדרות המשרה!</p>
-          <p className="text-sm text-orange-800 leading-relaxed mb-2">
-            כאן תוכל/י להגדיר משרה אחת או יותר — האפליקציה תשתמש בהן כדי לחשב את שכרך בצורה מדויקת.
-          </p>
-          <p className="text-sm text-orange-800 leading-relaxed mb-2">
-            בכל קטע תמצא/י הסבר קצר: מה המשמעות של כל רכיב בשכר, איך לבדוק אם לא בטוח/ה, ומה קובע החוק.
-          </p>
-          <p className="text-sm text-orange-800 leading-relaxed">
-            סיימת להגדיר? לחץ/י <span className="font-semibold">שמור/י</span> — והמשרה תהיה מוכנה לרישום משמרות.
-          </p>
-          <p className="text-sm text-orange-500 mt-3 font-medium">בהצלחה!</p>
-          <div className="flex justify-end mt-3">
-            <button
-              onClick={() => { setInfoVisible(false); localStorage.setItem("settingsInfoDismissed", "1"); }}
-              className="text-xs text-orange-400 hover:text-orange-600 underline transition-colors"
-            >
-              הסתר
-            </button>
-          </div>
-        </div>
-      )}
 
       <div className="p-4 space-y-4">
 
@@ -445,6 +419,29 @@ export default function SettingsPage() {
         </div>
 
       </div>
+
+      {/* Info modal */}
+      {infoOpen && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={() => { setInfoOpen(false); localStorage.setItem("settingsInfoDismissed", "1"); }} />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6">
+            <h2 className="text-base font-bold text-gray-900 mb-4">ברוכ/ה הבא/ה להגדרות המשרה!</h2>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600 leading-relaxed">כאן תוכל/י להגדיר משרה אחת או יותר — האפליקציה תשתמש בהן כדי לחשב את שכרך בצורה מדויקת.</p>
+              <p className="text-sm text-gray-600 leading-relaxed">בכל קטע תמצא/י הסבר קצר: מה המשמעות של כל רכיב בשכר, איך לבדוק אם לא בטוח/ה, ומה קובע החוק.</p>
+              <p className="text-sm text-gray-600 leading-relaxed">סיימת להגדיר? לחץ/י <span className="font-semibold">שמור/י</span> — והמשרה תהיה מוכנה לרישום משמרות.</p>
+              <p className="text-sm text-gray-600 leading-relaxed">לא לשכוח לסנכרן זמני שבת וחגים לדיוק מירבי 🙂</p>
+            </div>
+            <p className="text-sm text-orange-500 font-medium mt-4">בהצלחה!</p>
+            <button
+              onClick={() => { setInfoOpen(false); localStorage.setItem("settingsInfoDismissed", "1"); }}
+              className="mt-4 w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors"
+            >
+              הבנתי
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

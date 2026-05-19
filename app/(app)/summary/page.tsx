@@ -23,6 +23,7 @@ export default function SummaryPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [shifts, setShifts] = useState<Shift[]>([]);
+  const [infoOpen, setInfoOpen] = useState(false);
   const shabbatTimes = useShabbatTimes(year);
   const holidays = useHolidayTimes(year);
 
@@ -70,23 +71,30 @@ export default function SummaryPage() {
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 pt-4 pb-3">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-bold text-gray-900">סיכום חודשי</h1>
-          {jobs.length > 1 && (
-            <div className="flex gap-1.5">
-              {jobs.map((j) => (
-                <button
-                  key={j.id}
-                  onClick={() => setSelectedJob(j)}
-                  className={`px-3 py-1 text-xs font-medium rounded-lg border transition-colors ${
-                    selectedJob?.id === j.id ? "text-white" : "border-gray-200 text-gray-600 hover:border-gray-300"
-                  }`}
-                  style={selectedJob?.id === j.id ? { backgroundColor: j.color, borderColor: j.color } : undefined}
-                >
-                  {j.name}
-                </button>
-              ))}
-            </div>
-          )}
+          <button
+            onClick={() => setInfoOpen(true)}
+            className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 hover:bg-orange-100 flex items-center justify-center text-sm font-bold transition-colors"
+          >
+            ?
+          </button>
         </div>
+
+        {jobs.length > 1 && (
+          <div className="flex gap-1 bg-gray-200 rounded-xl p-2 mb-3">
+            {jobs.map((j) => (
+              <button
+                key={j.id}
+                onClick={() => setSelectedJob(j)}
+                className={`flex-1 py-1 text-sm font-medium rounded-lg transition-colors ${
+                  selectedJob?.id === j.id ? "text-white shadow-sm" : "bg-white text-gray-700 shadow-sm"
+                }`}
+                style={selectedJob?.id === j.id ? { backgroundColor: j.color } : undefined}
+              >
+                {j.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Month navigation */}
         <div className="flex items-center justify-between">
@@ -199,6 +207,35 @@ export default function SummaryPage() {
                 <div className="font-bold text-blue-600">{formatCurrency(totalGross)}</div>
               </div>
             </div>
+          </div>
+        </>
+      )}
+      {/* Info modal */}
+      {infoOpen && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={() => setInfoOpen(false)} />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6">
+            <h2 className="text-base font-bold text-gray-900 mb-4">סיכום חודשי — מה יש פה?</h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">רשימת משמרות</p>
+                <p className="text-sm text-gray-600 leading-relaxed">תצוגה מפורטת של כל המשמרות בחודש — שעות עבודה, סוג יום (רגיל / שבת / חג) ורווח יומי.</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">סיכום בתחתית</p>
+                <p className="text-sm text-gray-600 leading-relaxed">סה״כ שעות, ברוטו לפני ניכויים ונסיעות — הכל מחושב אוטומטית לפי הגדרות המשרה.</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">ניווט בין חודשים</p>
+                <p className="text-sm text-gray-600 leading-relaxed">השתמש/י בחצים כדי לעבור בין חודשים ולראות היסטוריה.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setInfoOpen(false)}
+              className="mt-6 w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors"
+            >
+              הבנתי
+            </button>
           </div>
         </>
       )}

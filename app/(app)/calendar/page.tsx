@@ -159,6 +159,10 @@ export default function CalendarPage() {
   const handleSave = useCallback(async (shift: Shift) => {
     await loadShifts(currentDate);
     if (shift.date === todayStr) {
+      setTodayClockIn(shift.clockIn);
+      setTodayClockOut(shift.clockOut);
+      localStorage.setItem(`clockIn_${todayStr}`, shift.clockIn);
+      localStorage.setItem(`clockOut_${todayStr}`, shift.clockOut);
       const cur = localStorage.getItem(`clockState_${todayStr}`);
       if (cur === "clocked-out") {
         setClockState("reviewed");
@@ -377,7 +381,7 @@ export default function CalendarPage() {
             <div className="flex items-center gap-3">
               <div className="flex-1">
                 <div className="text-xs text-gray-400">היום</div>
-                <div className="text-base font-bold text-gray-900">{todayClockIn} → {todayClockOut}</div>
+                <div className="text-base font-bold text-gray-900" dir="ltr">{todayClockIn} → {todayClockOut}</div>
               </div>
               <button
                 onClick={() => setSelectedDate(todayStr)}
@@ -404,7 +408,7 @@ export default function CalendarPage() {
                   </div>
                 )}
                 <div className="text-xs text-gray-400">היום</div>
-                <div className="text-sm font-bold text-gray-900">{todayClockIn} → {todayClockOut}</div>
+                <div className="text-sm font-bold text-gray-900" dir="ltr">{todayClockIn} → {todayClockOut}</div>
               </div>
               <button
                 onClick={() => setSelectedDate(todayStr)}
@@ -438,7 +442,7 @@ export default function CalendarPage() {
         <>
           <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={() => setInfoOpen(false)} />
           <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6">
-            <h2 className="text-base font-bold text-gray-900 mb-4">לוח שנה — איך עובד?</h2>
+            <h2 className="text-base font-bold text-gray-900 mb-4">לוח שנה ורישום משמרות — איך עובד?</h2>
 
             <div className="space-y-4">
               <div>
@@ -450,16 +454,15 @@ export default function CalendarPage() {
                 <p className="text-sm text-gray-600 leading-relaxed">בתחתית המסך יש כפתורי כניסה ויציאה — לחיצה עליהם תרשום אוטומטית את השעה להיום. לאחר היציאה, לחץ/י <span className="font-medium">ווידוא יום</span> כדי לאשר ולשמור.</p>
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-800 mb-1">צבעים בלוח</p>
+                <p className="text-sm font-semibold text-gray-800 mb-1">ימים בצע</p>
                 <div className="text-sm text-gray-600 space-y-0.5">
                   <p>🟠 שבת — מסומן בכתום</p>
                   <p>🟣 חג — מסומן בסגול</p>
-                  <p>• יום עם משמרת — מסומן בנקודה</p>
                 </div>
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-800 mb-1">חישוב שכר</p>
-                <p className="text-sm text-gray-600 leading-relaxed">כל המשמרות מחושבות אוטומטית לפי ההגדרות שהזנת בעמוד ההגדרות — כולל שעות נוספות, שבת וחגים.</p>
+                <p className="text-sm text-gray-600 leading-relaxed">כל המשמרות מחושבות אוטומטית לפי ההגדרות שהזנת בעמוד ההגדרות — כולל שעות נוספות, שבת וחגים ומתווספות לחישוב התלוש.</p>
               </div>
             </div>
 

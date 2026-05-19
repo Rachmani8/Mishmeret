@@ -146,7 +146,7 @@ export default function ShiftDrawer({ date, job, jobs, holidayLabel, openShiftId
                     {dayShifts.length > 1 ? `${i + 1} · ` : ""}
                     {jobNameMap[s.jobId] ?? ""}
                   </span>
-                  <span className="text-sm font-bold text-gray-900 flex-1 text-center">
+                  <span dir="ltr" className="text-sm font-bold text-gray-900 flex-1 text-center">
                     {s.clockIn} → {s.clockOut}
                   </span>
                   <div className="flex gap-3 flex-none">

@@ -21,6 +21,7 @@ export default function ExportPage() {
   const [selected, setSelected] = useState<Set<number>>(new Set([currentMonth]));
   const [loading, setLoading] = useState(false);
   const [loadingHours, setLoadingHours] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const currentMonthRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -181,7 +182,15 @@ export default function ExportPage() {
     <div className="flex flex-col min-h-full">
       {/* Header */}
       <div className="px-4 pt-4 pb-3 border-b border-gray-100">
-        <h1 className="text-xl font-bold text-gray-900">ייצוא לאקסל</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-gray-900">ייצוא לאקסל</h1>
+          <button
+            onClick={() => setInfoOpen(true)}
+            className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 hover:bg-orange-100 flex items-center justify-center text-sm font-bold transition-colors"
+          >
+            ?
+          </button>
+        </div>
         <p className="text-sm text-gray-500 mt-0.5">ייצוא נתוני משמרות לקובץ Excel</p>
       </div>
 
@@ -193,15 +202,15 @@ export default function ExportPage() {
         <div className="p-4 space-y-4">
           {/* Job selector */}
           {jobs.length > 1 && (
-            <div className="flex gap-1.5">
+            <div className="flex gap-1 bg-gray-200 rounded-xl p-2">
               {jobs.map((j) => (
                 <button
                   key={j.id}
                   onClick={() => setSelectedJob(j)}
-                  className={`flex-1 py-2 text-sm font-medium rounded-xl border transition-colors ${
-                    selectedJob?.id === j.id ? "text-white" : "border-gray-200 text-gray-600 hover:border-gray-300"
+                  className={`flex-1 py-1 text-sm font-medium rounded-lg transition-colors ${
+                    selectedJob?.id === j.id ? "text-white shadow-sm" : "bg-white text-gray-700 shadow-sm"
                   }`}
-                  style={selectedJob?.id === j.id ? { backgroundColor: j.color, borderColor: j.color } : undefined}
+                  style={selectedJob?.id === j.id ? { backgroundColor: j.color } : undefined}
                 >
                   {j.name}
                 </button>
@@ -299,6 +308,32 @@ export default function ExportPage() {
             <p className="text-xs text-gray-500"><span className="font-medium text-gray-600">טבלת שעות</span> — תאריך, שעות כניסה/יציאה וסה״כ שעות בלבד</p>
           </div>
         </div>
+      )}
+
+      {/* Info modal */}
+      {infoOpen && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={() => setInfoOpen(false)} />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6">
+            <h2 className="text-base font-bold text-gray-900 mb-4">ייצוא לאקסל — מה יש פה?</h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">ייצוא מלא</p>
+                <p className="text-sm text-gray-600 leading-relaxed">מייצא קובץ Excel עם כל המשמרות של השנה — כולל שעות, תעריפים, שעות נוספות, שבת וחג ורווח יומי.</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">ייצוא שעות בלבד</p>
+                <p className="text-sm text-gray-600 leading-relaxed">מייצא קובץ פשוט עם תאריכים ושעות כניסה/יציאה בלבד — מתאים לדיווח למעסיק.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setInfoOpen(false)}
+              className="mt-6 w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors"
+            >
+              הבנתי
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

@@ -101,6 +101,7 @@ export default function PayslipPage() {
   const holidays = useHolidayTimes(year);
   const [actual, setActual] = useState<ActualValues>(emptyActual());
   const [showValidator, setShowValidator] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   useEffect(() => {
     db.jobs.toArray().then((j) => {
@@ -147,23 +148,31 @@ export default function PayslipPage() {
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 pt-4 pb-3">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-bold text-gray-900">תלוש משוער</h1>
-          {jobs.length > 1 && (
-            <div className="flex gap-1.5">
-              {jobs.map((j) => (
-                <button
-                  key={j.id}
-                  onClick={() => setSelectedJob(j)}
-                  className={`px-3 py-1 text-xs font-medium rounded-lg border transition-colors ${
-                    selectedJob?.id === j.id ? "text-white" : "border-gray-200 text-gray-600 hover:border-gray-300"
-                  }`}
-                  style={selectedJob?.id === j.id ? { backgroundColor: j.color, borderColor: j.color } : undefined}
-                >
-                  {j.name}
-                </button>
-              ))}
-            </div>
-          )}
+          <button
+            onClick={() => setInfoOpen(true)}
+            className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 hover:bg-orange-100 flex items-center justify-center text-sm font-bold transition-colors"
+          >
+            ?
+          </button>
         </div>
+
+        {jobs.length > 1 && (
+          <div className="flex gap-1 bg-gray-200 rounded-xl p-2 mb-3">
+            {jobs.map((j) => (
+              <button
+                key={j.id}
+                onClick={() => setSelectedJob(j)}
+                className={`flex-1 py-1 text-sm font-medium rounded-lg transition-colors ${
+                  selectedJob?.id === j.id ? "text-white shadow-sm" : "bg-white text-gray-700 shadow-sm"
+                }`}
+                style={selectedJob?.id === j.id ? { backgroundColor: j.color } : undefined}
+              >
+                {j.name}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <button onClick={() => navigate(-1)} className="p-1.5 text-gray-500 hover:text-gray-800">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path d="m9 18 6-6-6-6" /></svg>
@@ -292,6 +301,36 @@ export default function PayslipPage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Info modal */}
+      {infoOpen && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={() => setInfoOpen(false)} />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6">
+            <h2 className="text-base font-bold text-gray-900 mb-4">תלוש משוער — מה יש פה?</h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">חישוב שכר</p>
+                <p className="text-sm text-gray-600 leading-relaxed">האפליקציה מחשבת תלוש משוער על בסיס המשמרות שרשמת והגדרות המשרה — שכר בסיס, שעות נוספות, תוספות שבת וחג ונסיעות.</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">ניכויים</p>
+                <p className="text-sm text-gray-600 leading-relaxed">מוצגים ניכויי ביטוח לאומי, ביטוח בריאות, מס הכנסה ופנסיה — לפי מדרגות המס העדכניות.</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">מוודא תלוש</p>
+                <p className="text-sm text-gray-600 leading-relaxed">ניתן להזין את הנתונים מהתלוש האמיתי כדי להשוות ולבדוק אם הכל תואם.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setInfoOpen(false)}
+              className="mt-6 w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors"
+            >
+              הבנתי
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
