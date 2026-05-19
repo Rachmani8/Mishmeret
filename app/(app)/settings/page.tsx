@@ -29,14 +29,7 @@ const rateFields: Field[] = [
 
 const taxField: Field = { key: "taxCreditPoints", label: "נקודות זיכוי", type: "number", step: 0.25, max: 20, hint: "ברירת מחדל: 2.25 לתושב/ת ישראל רווק/ה" };
 const commuteSubField: Field = { key: "commuteDaily", label: "נסיעות יומיות (₪)", type: "number", step: 0.1, max: 1000, hint: "ברירת מחדל: ₪22.60 ליום" };
-const JOB_COLOR_OPTIONS = [
-  "#EF4444", // red
-  "#EAB308", // yellow
-  "#8B5CF6", // purple
-  "#22C55E", // green
-  "#F97316", // orange
-  "#3B82F6", // blue
-];
+const JOB_COLORS = ["#B45309", "#65A30D", "#CA8A04"]; // amber, lime, golden yellow — by job order
 
 const pensionSubFields: Field[] = [
   { key: "pensionEmployeePercent", label: "הפרשת עובד/ת (%)", type: "percent", max: 50, hint: "ברירת מחדל: 6%" },
@@ -225,28 +218,8 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
         </>
       )}
 
-      {/* Color picker */}
-      <div className="px-4 py-3 border-b border-gray-200">
-        <label className="block text-xs font-medium text-gray-700 mb-2">צבע משרה</label>
-        <div className="flex gap-2">
-          {JOB_COLOR_OPTIONS.map((color) => (
-            <button
-              key={color}
-              onClick={() => set("color", color)}
-              className="w-7 h-7 rounded-full transition-transform hover:scale-110 flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: color, boxShadow: form.color === color ? `0 0 0 2px white, 0 0 0 4px ${color}` : undefined }}
-            >
-              {form.color === color && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3} className="w-3.5 h-3.5">
-                  <path d="M20 6 9 17l-5-5" />
-                </svg>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      <div className="px-4 py-4 flex gap-3 bg-gray-50/50">
+<div className="px-4 py-4 flex gap-3 bg-gray-50/50">
         <button
           onClick={() => onDelete(job.id)}
           className="flex-none text-sm font-medium text-red-500 border border-red-300 px-4 py-2 rounded-xl hover:bg-red-50 transition-colors"
@@ -273,10 +246,16 @@ export default function SettingsPage() {
   const [syncStatus, setSyncStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [shabbatOpen, setShabbatOpen] = useState(false);
   const [hasSynced, setHasSynced] = useState(true);
+  const [infoVisible, setInfoVisible] = useState(() =>
+    typeof window !== "undefined" ? localStorage.getItem("settingsInfoDismissed") !== "1" : true
+  );
 
   useEffect(() => {
-    db.jobs.toArray().then((j) => {
-      setJobs(j.slice().sort((a, b) => a.name.localeCompare(b.name, "he")));
+    db.jobs.toArray().then(async (j) => {
+      const sorted = j.slice().sort((a, b) => a.name.localeCompare(b.name, "he"));
+      const colored = sorted.map((job, i) => ({ ...job, color: JOB_COLORS[i % JOB_COLORS.length] }));
+      await Promise.all(colored.map((job) => db.jobs.put(job)));
+      setJobs(colored);
     });
     getAppSettings().then((s) => setCityId(s.cityId));
     db.shabbatCache.count().then((n) => setHasSynced(n > 0));
@@ -308,7 +287,8 @@ export default function SettingsPage() {
   };
 
   const addJob = async () => {
-    const job = defaultJob({ name: `משרה ${jobs.length + 1}` });
+    const color = JOB_COLORS[jobs.length % JOB_COLORS.length];
+    const job = defaultJob({ name: `משרה ${jobs.length + 1}`, color });
     await db.jobs.add(job);
     setJobs((prev) => [...prev, job]);
     setExpandedId(job.id);
@@ -325,16 +305,51 @@ export default function SettingsPage() {
     await db.shifts.where("jobId").equals(id).delete();
     const remaining = jobs.filter((j) => j.id !== id);
     setJobs(remaining);
-    setExpandedId(remaining[0]?.id ?? null);
+    setExpandedId(null);
   };
 
   return (
     <div className="flex flex-col min-h-full">
       {/* Header */}
       <div className="px-4 pt-4 pb-3 border-b border-gray-100">
-        <h1 className="text-xl font-bold text-gray-900">הגדרות משרה</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-gray-900">הגדרות משרה</h1>
+          {!infoVisible && (
+            <button
+              onClick={() => { setInfoVisible(true); localStorage.removeItem("settingsInfoDismissed"); }}
+              className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 hover:bg-orange-100 flex items-center justify-center text-sm font-bold transition-colors"
+            >
+              ?
+            </button>
+          )}
+        </div>
         <p className="text-sm text-gray-500 mt-0.5">הגדר/י את פרטי המשרה לחישוב שכר מדויק</p>
       </div>
+
+      {/* Info card */}
+      {infoVisible && (
+        <div className="mx-4 mt-4 bg-orange-50 border border-orange-100 rounded-2xl px-4 py-4 relative">
+            <p className="text-sm font-bold text-orange-900 mb-2">ברוכ/ה הבא/ה להגדרות המשרה!</p>
+          <p className="text-sm text-orange-800 leading-relaxed mb-2">
+            כאן תוכל/י להגדיר משרה אחת או יותר — האפליקציה תשתמש בהן כדי לחשב את שכרך בצורה מדויקת.
+          </p>
+          <p className="text-sm text-orange-800 leading-relaxed mb-2">
+            בכל קטע תמצא/י הסבר קצר: מה המשמעות של כל רכיב בשכר, איך לבדוק אם לא בטוח/ה, ומה קובע החוק.
+          </p>
+          <p className="text-sm text-orange-800 leading-relaxed">
+            סיימת להגדיר? לחץ/י <span className="font-semibold">שמור/י</span> — והמשרה תהיה מוכנה לרישום משמרות.
+          </p>
+          <p className="text-sm text-orange-500 mt-3 font-medium">בהצלחה!</p>
+          <div className="flex justify-end mt-3">
+            <button
+              onClick={() => { setInfoVisible(false); localStorage.setItem("settingsInfoDismissed", "1"); }}
+              className="text-xs text-orange-400 hover:text-orange-600 underline transition-colors"
+            >
+              הסתר
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="p-4 space-y-4">
 
@@ -377,7 +392,7 @@ export default function SettingsPage() {
             className="w-full flex items-center justify-between px-4 py-3 bg-blue-50 hover:bg-blue-100 transition-colors"
           >
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-blue-800">הגדר/י זמני כניסת שבת וחגים</span>
+              <span className="text-sm font-bold text-blue-800 underline">הגדר/י זמני כניסת שבת וחגים</span>
               {hasSynced
                 ? <span className="text-xs text-green-500 font-medium">✓ סונכרן</span>
                 : <span className="text-xs text-orange-400 font-medium">! לא סונכרן</span>

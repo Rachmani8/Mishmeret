@@ -104,8 +104,9 @@ export default function PayslipPage() {
 
   useEffect(() => {
     db.jobs.toArray().then((j) => {
-      setJobs(j);
-      if (j.length > 0) setSelectedJob(j[0]);
+      const sorted = j.slice().sort((a, b) => a.name.localeCompare(b.name, "he"));
+      setJobs(sorted);
+      if (sorted.length > 0) setSelectedJob(sorted[0]);
     });
   }, []);
 

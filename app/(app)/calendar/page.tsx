@@ -31,6 +31,7 @@ export default function CalendarPage() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [clockJob, setClockJob] = useState<Job | null>(null);
   const [clockShiftId, setClockShiftId] = useState<string | null>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   // Clock in/out — initialized from localStorage on mount (guard for SSR)
   const [clockState, setClockState] = useState<ClockState>(
@@ -47,10 +48,11 @@ export default function CalendarPage() {
 
   useEffect(() => {
     db.jobs.toArray().then((j) => {
-      setJobs(j);
-      if (j.length > 0) {
-        setSelectedJob(j[0]);
-        setClockJob(j[0]);
+      const sorted = j.slice().sort((a, b) => a.name.localeCompare(b.name, "he"));
+      setJobs(sorted);
+      if (sorted.length > 0) {
+        setSelectedJob(sorted[0]);
+        setClockJob(sorted[0]);
       }
     });
   }, []);
@@ -222,11 +224,7 @@ export default function CalendarPage() {
         <span className={`text-xs font-semibold ${todayDay ? "text-blue-600" : (isHoliday || isErevChag) ? "text-purple-600" : isSat ? "text-orange-500" : "text-gray-500"}`}>
           {DAY_ABBR_HE[date.getDay()]}
         </span>
-        {(isHoliday || isErevChag) && (
-          <span className="text-[9px] font-medium text-purple-600 leading-tight text-center w-full truncate px-0.5">
-            {isHoliday ? holidays[key] : erevName}
-          </span>
-        )}
+
         <span className={`font-bold ${compact ? "text-sm" : "text-base"} ${todayDay ? "text-blue-600" : "text-gray-800"}`}>
           {date.getDate()}
         </span>
@@ -249,6 +247,12 @@ export default function CalendarPage() {
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 pt-4 pb-3">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-bold text-gray-900">לוח שנה</h1>
+          <button
+            onClick={() => setInfoOpen(true)}
+            className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 hover:bg-orange-100 flex items-center justify-center text-sm font-bold transition-colors"
+          >
+            ?
+          </button>
         </div>
 
         {/* View toggle + navigation */}
@@ -423,11 +427,51 @@ export default function CalendarPage() {
         job={selectedJob}
         jobs={jobs}
         holidayLabel={selectedDateHoliday}
-        openShiftId={clockState === "clocked-out" && selectedDate === todayStr ? clockShiftId : null}
+        openShiftId={(clockState === "clocked-out" || clockState === "reviewed") && selectedDate === todayStr ? clockShiftId : null}
         onClose={() => { setSelectedDate(null); setSelectedDateHoliday(undefined); loadShifts(currentDate); }}
         onSave={handleSave}
         onDelete={handleDelete}
       />
+
+      {/* Info modal */}
+      {infoOpen && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={() => setInfoOpen(false)} />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6">
+            <h2 className="text-base font-bold text-gray-900 mb-4">לוח שנה — איך עובד?</h2>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">רישום משמרות</p>
+                <p className="text-sm text-gray-600 leading-relaxed">לחץ/י על יום בלוח כדי לפתוח אותו — תוכל/י להוסיף, לערוך או למחוק משמרות. ניתן לרשום יותר ממשמרת אחת ביום.</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">כניסה ויציאה מהעבודה</p>
+                <p className="text-sm text-gray-600 leading-relaxed">בתחתית המסך יש כפתורי כניסה ויציאה — לחיצה עליהם תרשום אוטומטית את השעה להיום. לאחר היציאה, לחץ/י <span className="font-medium">ווידוא יום</span> כדי לאשר ולשמור.</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">צבעים בלוח</p>
+                <div className="text-sm text-gray-600 space-y-0.5">
+                  <p>🟠 שבת — מסומן בכתום</p>
+                  <p>🟣 חג — מסומן בסגול</p>
+                  <p>• יום עם משמרת — מסומן בנקודה</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">חישוב שכר</p>
+                <p className="text-sm text-gray-600 leading-relaxed">כל המשמרות מחושבות אוטומטית לפי ההגדרות שהזנת בעמוד ההגדרות — כולל שעות נוספות, שבת וחגים.</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setInfoOpen(false)}
+              className="mt-6 w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors"
+            >
+              הבנתי
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
