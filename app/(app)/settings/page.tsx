@@ -58,7 +58,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
   const renderField = (field: Field) => {
     const value = form[field.key];
     return (
-      <div key={field.key} className="px-4 py-3 border-b border-gray-50 last:border-0">
+      <div key={field.key} className="px-4 py-3 border-b border-gray-200 last:border-0">
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1 min-w-0">
             <label className="block text-sm font-medium text-gray-800">{field.label}</label>
@@ -103,7 +103,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
       {/* Collapsible rates section */}
       <button
         onClick={() => setRatesOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50 hover:bg-gray-100 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-100 hover:bg-gray-200 transition-colors"
       >
         <span className="text-sm font-bold text-gray-800">הגדרת תעריפי שבת/חג/שע׳ נוספות</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={`w-4 h-4 text-gray-500 transition-transform ${ratesOpen ? "rotate-180" : ""}`}>
@@ -115,7 +115,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
       {/* Tax credit points section */}
       <button
         onClick={() => setTaxOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50 hover:bg-gray-100 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-100 hover:bg-gray-200 transition-colors"
       >
         <span className="text-sm font-bold text-gray-800">נקודות זיכוי במס</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={`w-4 h-4 text-gray-500 transition-transform ${taxOpen ? "rotate-180" : ""}`}>
@@ -125,7 +125,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
       {taxOpen && (
         <>
           {renderField(taxField)}
-          <div className="px-4 py-3 border-b border-gray-50 bg-blue-50/50">
+          <div className="px-4 py-3 border-b border-gray-200 bg-blue-50/50">
             <p className="text-xs text-gray-600 leading-relaxed">
               לא יודע/ת כמה נקודות זיכוי יש לך? ניתן לבדוק בתלוש השכר האחרון שלך.
             </p>
@@ -148,7 +148,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
       {/* Commute section */}
       <button
         onClick={() => setCommuteOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50 hover:bg-gray-100 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-100 hover:bg-gray-200 transition-colors"
       >
         <span className="text-sm font-bold text-gray-800">נסיעות</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={`w-4 h-4 text-gray-500 transition-transform ${commuteOpen ? "rotate-180" : ""}`}>
@@ -157,7 +157,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
       </button>
       {commuteOpen && (
         <>
-          <div className="px-4 py-3 border-b border-gray-50 flex items-center justify-between gap-3">
+          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between gap-3">
             <label className="text-sm font-medium text-gray-800">הפעל נסיעות</label>
             <button
               onClick={() => set("commuteEnabled", !form.commuteEnabled)}
@@ -167,7 +167,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
             </button>
           </div>
           {renderField(commuteSubField)}
-          <div className="px-4 py-3 border-b border-gray-50 bg-blue-50/50">
+          <div className="px-4 py-3 border-b border-gray-200 bg-blue-50/50">
             <p className="text-xs text-gray-600 leading-relaxed">
               על פי חוק, המעסיק חייב לשלם החזר נסיעות בגובה עלות התחבורה הציבורית הזולה ביותר לעבודה.
             </p>
@@ -181,7 +181,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
       {/* Pension section */}
       <button
         onClick={() => setPensionOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50 hover:bg-gray-100 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-100 hover:bg-gray-200 transition-colors"
       >
         <span className="text-sm font-bold text-gray-800">פנסיה</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={`w-4 h-4 text-gray-500 transition-transform ${pensionOpen ? "rotate-180" : ""}`}>
@@ -190,7 +190,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
       </button>
       {pensionOpen && (
         <>
-          <div className="px-4 py-3 border-b border-gray-50 flex items-center justify-between gap-3">
+          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between gap-3">
             <label className="text-sm font-medium text-gray-800">הפעל פנסיה</label>
             <button
               onClick={() => set("pensionEnabled", !form.pensionEnabled)}
@@ -200,7 +200,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
             </button>
           </div>
           {pensionSubFields.map(renderField)}
-          <div className="px-4 py-3 border-b border-gray-50 bg-blue-50/50">
+          <div className="px-4 py-3 border-b border-gray-200 bg-blue-50/50">
             <p className="text-xs text-gray-600 leading-relaxed">
               פנסיה חובה חלה על כל עובד/ת שכיר/ה מגיל 20 (נשים) או 21 (גברים). סה״כ ההפרשה היא 18.5% מהשכר: 6% על חשבון העובד/ת, 6.5% תגמולים ו־6% פיצויים על חשבון המעסיק.
             </p>
