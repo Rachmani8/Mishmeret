@@ -158,7 +158,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
       {commuteOpen && (
         <>
           <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between gap-3">
-            <label className="text-sm font-medium text-gray-800">הפעל נסיעות</label>
+            <label className="text-sm font-medium text-gray-800">הפעל/י נסיעות</label>
             <button
               onClick={() => set("commuteEnabled", !form.commuteEnabled)}
               className={`relative flex-none w-12 h-6 rounded-full transition-colors ${form.commuteEnabled ? "bg-blue-600" : "bg-gray-200"}`}
@@ -191,7 +191,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
       {pensionOpen && (
         <>
           <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between gap-3">
-            <label className="text-sm font-medium text-gray-800">הפעל פנסיה</label>
+            <label className="text-sm font-medium text-gray-800">הפעל/י פנסיה</label>
             <button
               onClick={() => set("pensionEnabled", !form.pensionEnabled)}
               className={`relative flex-none w-12 h-6 rounded-full transition-colors ${form.pensionEnabled ? "bg-blue-600" : "bg-gray-200"}`}
