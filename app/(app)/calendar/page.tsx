@@ -27,6 +27,7 @@ export default function CalendarPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedDateHoliday, setSelectedDateHoliday] = useState<string | undefined>(undefined);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
   // Clock in/out — initialized from localStorage on mount (guard for SSR)
@@ -136,7 +137,15 @@ export default function CalendarPage() {
 
   const openDay = (d: Date) => {
     if (!selectedJob) return; // no job → calendar is read-only
-    setSelectedDate(formatDate(d));
+    const key = formatDate(d);
+    const isSat = d.getDay() === 6;
+    const isHoliday = !!holidays[key];
+    const nextKey = formatDate(new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1));
+    const holiday = isHoliday
+      ? holidays[key]
+      : (!isSat && holidays[nextKey] ? `ערב ${holidays[nextKey]}` : undefined);
+    setSelectedDateHoliday(holiday);
+    setSelectedDate(key);
   };
 
   const handleSave = useCallback(async (shift: Shift) => {
@@ -369,8 +378,9 @@ export default function CalendarPage() {
         date={selectedDate}
         job={selectedJob}
         jobs={jobs}
+        holidayLabel={selectedDateHoliday}
         existingShift={selectedDate ? (shiftMap[selectedDate]?.find((s) => s.jobId === selectedJob?.id) ?? null) : null}
-        onClose={() => setSelectedDate(null)}
+        onClose={() => { setSelectedDate(null); setSelectedDateHoliday(undefined); }}
         onSave={handleSave}
         onDelete={handleDelete}
       />

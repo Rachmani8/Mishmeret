@@ -9,13 +9,14 @@ interface Props {
   date: string | null;
   job: Job | null;
   jobs: Job[];
+  holidayLabel?: string;
   existingShift: Shift | null;
   onClose: () => void;
   onSave: (shift: Shift) => void;
   onDelete: (shiftId: string) => void;
 }
 
-export default function ShiftDrawer({ date, job, jobs, existingShift, onClose, onSave, onDelete }: Props) {
+export default function ShiftDrawer({ date, job, jobs, holidayLabel, existingShift, onClose, onSave, onDelete }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [activeShift, setActiveShift] = useState<Shift | null>(null);
@@ -42,6 +43,8 @@ export default function ShiftDrawer({ date, job, jobs, existingShift, onClose, o
   const dateObj = new Date(date + "T00:00:00");
   const dayNames = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
   const dayLabel = `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()} — יום ${dayNames[dateObj.getDay()]}`;
+  const isSat = dateObj.getDay() === 6;
+  const headerColor = holidayLabel ? "text-purple-600" : isSat ? "text-orange-500" : "text-gray-900";
 
   const handleSave = () => {
     onSave({ ...form, isWorkDay: true });
@@ -65,7 +68,10 @@ export default function ShiftDrawer({ date, job, jobs, existingShift, onClose, o
         <div className="px-5 pb-6 max-h-[75vh] overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between py-3 border-b border-gray-100 mb-4">
-            <h2 className="text-base font-semibold text-gray-900">{dayLabel}</h2>
+            <div>
+              <h2 className={`text-base font-semibold ${headerColor}`}>{dayLabel}</h2>
+              {holidayLabel && <p className={`text-xs font-medium mt-0.5 ${headerColor}`}>{holidayLabel}</p>}
+            </div>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
                 <path d="M18 6 6 18M6 6l12 12" />

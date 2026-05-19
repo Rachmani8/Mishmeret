@@ -116,8 +116,12 @@ export function calcDayEarnings(
 
   if (isSaturday) {
     isWeekend = true;
+    const isAlsoHoliday = !!(holidays?.[shift.date]);
+    const satMult = (isAlsoHoliday && job.holidayMultiplier > job.weekendMultiplier)
+      ? job.holidayMultiplier
+      : job.weekendMultiplier;
     const bd = calcHoursBreakdown(workedHours, 0, norm, job.baseHourlyRate, true,
-      job.weekendMultiplier, job.overtime1Multiplier, job.overtime2Multiplier);
+      satMult, job.overtime1Multiplier, job.overtime2Multiplier);
     baseEarnings = bd.base;
     overtime1Earnings = bd.overtime1; overtime1Hours = bd.ot1Hours;
     overtime2Earnings = bd.overtime2; overtime2Hours = bd.ot2Hours;
