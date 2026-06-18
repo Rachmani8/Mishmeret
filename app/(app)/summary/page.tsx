@@ -11,8 +11,6 @@ import {
   formatCurrency,
   formatHours,
   MONTH_NAMES_HE,
-  SHIFT_TYPE_LABELS,
-  SHIFT_TYPE_COLORS,
   DAY_NAMES_HE,
 } from "@/lib/calculations";
 
@@ -133,24 +131,17 @@ export default function SummaryPage() {
 
             {workShifts.map((shift) => {
               const dateObj = new Date(shift.date + "T00:00:00");
-              const earnings = selectedJob ? calcDayEarnings(shift, selectedJob, shabbatTimes) : null;
+              const earnings = selectedJob ? calcDayEarnings(shift, selectedJob, shabbatTimes, holidays) : null;
 
               return (
                 <div key={shift.id} className="bg-white border border-gray-100 rounded-2xl px-4 py-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <div
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: SHIFT_TYPE_COLORS[shift.shiftType] }}
-                      />
                       <span className="text-sm font-semibold text-gray-800">
                         {dateObj.getDate()} {MONTH_NAMES_HE[dateObj.getMonth()]}
                       </span>
                       <span className="text-xs text-gray-400">
                         יום {DAY_NAMES_HE[dateObj.getDay()]}
-                      </span>
-                      <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-md">
-                        {SHIFT_TYPE_LABELS[shift.shiftType]}
                       </span>
                     </div>
                     {earnings && (

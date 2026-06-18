@@ -138,10 +138,3 @@ export async function saveAppSettings(cityId: number, cityName: string) {
   await db.appSettings.put({ id: "singleton", cityId, cityName });
 }
 
-// Candle lighting time for a specific Friday, with 19:00 fallback
-export function getCandleLighting(
-  fridayDate: string,
-  shabbatTimes: Record<string, number>
-): number {
-  return shabbatTimes[fridayDate] ?? 19 * 60;
-}

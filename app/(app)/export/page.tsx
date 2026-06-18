@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { db } from "@/lib/db";
 import type { Job } from "@/lib/db";
+import { useShabbatTimes } from "@/lib/useShabbatTimes";
+import { useHolidayTimes } from "@/lib/useHolidayTimes";
 import {
   calcDayEarnings,
   calcWorkedHours,
@@ -23,6 +25,8 @@ export default function ExportPage() {
   const [loadingHours, setLoadingHours] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const currentMonthRef = useRef<HTMLButtonElement>(null);
+  const shabbatTimes = useShabbatTimes(year);
+  const holidays = useHolidayTimes(year);
 
   useEffect(() => {
     db.jobs.toArray().then((j) => {
@@ -91,7 +95,7 @@ export default function ExportPage() {
 
         for (const shift of workShifts) {
           const d = new Date(shift.date + "T00:00:00");
-          const e = calcDayEarnings(shift, selectedJob);
+          const e = calcDayEarnings(shift, selectedJob, shabbatTimes, holidays);
           const hours = calcWorkedHours(shift);
           const dailyEarnings = e.baseEarnings + e.overtime1Earnings + e.overtime2Earnings + e.weekendBonus;
           const tips = shift.tips ?? 0;

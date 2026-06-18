@@ -48,22 +48,6 @@ export function calcWorkedHours(shift: Shift): number {
   return Math.max(0, worked);
 }
 
-export function isWeekendShift(
-  shift: Shift,
-  shabbatTimes?: Record<string, number>,
-  holidays?: Record<string, string>
-): boolean {
-  const date = new Date(shift.date + "T00:00:00");
-  const dayOfWeek = date.getDay();
-  if (dayOfWeek === 6) return true;
-  if (holidays?.[shift.date]) return true;
-  const candleMin = shabbatTimes?.[shift.date];
-  if (candleMin !== undefined) {
-    return timeToMinutes(shift.clockIn) >= candleMin;
-  }
-  return false;
-}
-
 // Returns earnings split into three components matching real payslip structure:
 // base = all hours at 1× (regardless of type)
 // overtime = only the extra premium for overtime hours
@@ -278,25 +262,6 @@ export function formatCurrency(amount: number): string {
 export function formatHours(hours: number): string {
   return hours.toFixed(2);
 }
-
-export function getMonthShifts(shifts: Shift[], year: number, month: number): Shift[] {
-  const prefix = `${year}-${String(month).padStart(2, "0")}`;
-  return shifts.filter((s) => s.date.startsWith(prefix));
-}
-
-export const SHIFT_TYPE_LABELS: Record<string, string> = {
-  morning: "בוקר",
-  afternoon: "צהריים",
-  evening: "ערב",
-  general: "לילה",
-};
-
-export const SHIFT_TYPE_COLORS: Record<string, string> = {
-  morning: "#fbbf24",
-  afternoon: "#34d399",
-  evening: "#818cf8",
-  general: "#60a5fa",
-};
 
 export const DAY_NAMES_HE = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
 export const DAY_ABBR_HE = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"];

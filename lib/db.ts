@@ -24,7 +24,6 @@ export interface Shift {
   jobId: string;
   date: string;                    // ISO date "YYYY-MM-DD"
   isWorkDay: boolean;
-  shiftType: "morning" | "afternoon" | "evening" | "general";
   clockIn: string;                 // "HH:MM"
   clockOut: string;                // "HH:MM"
   tips: number;                    // cash tips, not included in gross
@@ -115,7 +114,6 @@ export function defaultShift(date: string, jobId: string, partial?: Partial<Shif
     jobId,
     date,
     isWorkDay: true,
-    shiftType: "morning",
     clockIn: "09:00",
     clockOut: "17:00",
     tips: 0,
