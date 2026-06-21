@@ -56,6 +56,16 @@ const tabs = [
       </svg>
     ),
   },
+  {
+    href: "/clock",
+    label: "שעון",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" strokeWidth={1.8} stroke="currentColor" className="w-6 h-6">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    ),
+  },
 ];
 
 export default function BottomNav() {
