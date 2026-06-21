@@ -30,7 +30,7 @@ function formatElapsed(seconds: number): string {
 function calcDuration(clockIn: string, clockOut: string): string {
   const totalMin = timeToSeconds(clockOut) / 60 - timeToSeconds(clockIn) / 60;
   const h = Math.floor(totalMin / 60);
-  const m = Math.round(totalMin % 60);
+  const m = Math.floor(totalMin % 60);
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
@@ -367,7 +367,7 @@ export default function ClockPage() {
         {/* CLOCKED-OUT → verify day */}
         {clockState === "clocked-out" && (
           <button
-            onClick={() => { setDrawerShiftId(null); setSelectedDate(todayStr); }}
+            onClick={() => { setDrawerShiftId(clockShiftId); setSelectedDate(todayStr); }}
             className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-5 h-5">
