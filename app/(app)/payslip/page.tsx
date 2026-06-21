@@ -157,13 +157,13 @@ export default function PayslipPage() {
         </div>
 
         {jobs.length > 1 && (
-          <div className="flex gap-1 bg-gray-200 rounded-xl p-2 mb-3">
+          <div className="flex bg-gray-100 rounded-xl p-1 gap-1 w-fit mx-auto mb-3">
             {jobs.map((j) => (
               <button
                 key={j.id}
                 onClick={() => setSelectedJob(j)}
-                className={`flex-1 py-1 text-sm font-medium rounded-lg transition-colors ${
-                  selectedJob?.id === j.id ? "text-white shadow-sm" : "bg-white text-gray-700 shadow-sm"
+                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  selectedJob?.id === j.id ? "text-white shadow-sm" : "text-gray-500"
                 }`}
                 style={selectedJob?.id === j.id ? { backgroundColor: j.color } : undefined}
               >

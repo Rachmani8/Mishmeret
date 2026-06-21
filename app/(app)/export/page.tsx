@@ -12,16 +12,33 @@ import {
   DAY_NAMES_HE,
 } from "@/lib/calculations";
 
+const EXPORT_FIELDS = [
+  { key: "date",          label: "תאריך" },
+  { key: "day",           label: "יום" },
+  { key: "clockIn",       label: "שעת כניסה" },
+  { key: "clockOut",      label: "שעת יציאה" },
+  { key: "hours",         label: "שעות" },
+  { key: "dailyEarnings", label: "שכר יומי" },
+  { key: "commute",       label: "נסיעות" },
+  { key: "tips",          label: "טיפים" },
+  { key: "total",         label: 'סה"כ' },
+] as const;
+
+type FieldKey = typeof EXPORT_FIELDS[number]["key"];
+
 export default function ExportPage() {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
+
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [year, setYear] = useState(currentYear);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [selectedFields, setSelectedFields] = useState<Set<FieldKey>>(
+    new Set(EXPORT_FIELDS.map((f) => f.key))
+  );
   const [loading, setLoading] = useState(false);
-  const [loadingHours, setLoadingHours] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const shabbatTimes = useShabbatTimes(year);
   const holidays = useHolidayTimes(year);
@@ -50,9 +67,16 @@ export default function ExportPage() {
     });
   };
 
-  const selectAll = () => {
-    setSelected(new Set(Array.from({ length: 12 }, (_, i) => i + 1)));
+  const toggleField = (key: FieldKey) => {
+    setSelectedFields((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   };
+
+  const selectAll = () => setSelected(new Set(Array.from({ length: 12 }, (_, i) => i + 1)));
   const selectNone = () => setSelected(new Set());
 
   const selectedCount = selected.size;
@@ -61,15 +85,25 @@ export default function ExportPage() {
     .sort((a, b) => a - b)
     .map((m) => ({ year, month: m, label: `${MONTH_NAMES_HE[m - 1]} ${year}` }));
 
+  const colWidths: Record<FieldKey, number> = {
+    date: 14, day: 12, clockIn: 12, clockOut: 12,
+    hours: 10, dailyEarnings: 14, commute: 12, tips: 12, total: 14,
+  };
+
   const handleExport = async () => {
     if (!selectedJob || selectedList.length === 0) {
       alert("בחר/י לפחות חודש אחד לייצוא");
+      return;
+    }
+    if (selectedFields.size === 0) {
+      alert("בחר/י לפחות שדה אחד לייצוא");
       return;
     }
     setLoading(true);
     try {
       const XLSX = await import("xlsx");
       const wb = XLSX.utils.book_new();
+      const activeFields = EXPORT_FIELDS.filter((f) => selectedFields.has(f.key));
 
       for (const mo of selectedList) {
         const prefix = `${mo.year}-${String(mo.month).padStart(2, "0")}`;
@@ -79,10 +113,8 @@ export default function ExportPage() {
           .toArray();
         const workShifts = shifts.filter((s) => s.isWorkDay).sort((a, b) => a.date.localeCompare(b.date));
 
-        const rows: (string | number)[][] = [
-          ["תאריך", "יום", "שעת כניסה", "שעת יציאה", "שעות", "שכר יומי", "נסיעות", "טיפים", 'סה"כ'],
-        ];
-        let totalHours = 0, totalEarnings = 0, totalCommute = 0, totalTips = 0;
+        const rows: (string | number)[][] = [activeFields.map((f) => f.label)];
+        let totalHours = 0, totalEarnings = 0, totalCommute = 0, totalTips = 0, totalTotal = 0;
 
         for (const shift of workShifts) {
           const d = new Date(shift.date + "T00:00:00");
@@ -90,31 +122,36 @@ export default function ExportPage() {
           const hours = calcWorkedHours(shift);
           const dailyEarnings = e.baseEarnings + e.overtime1Earnings + e.overtime2Earnings + e.weekendBonus;
           const tips = shift.tips ?? 0;
-          totalHours += hours;
-          totalEarnings += dailyEarnings;
-          totalCommute += e.commuteAmount;
-          totalTips += tips;
-          rows.push([
-            `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`,
-            `יום ${DAY_NAMES_HE[d.getDay()]}`,
-            shift.clockIn, shift.clockOut,
-            parseFloat(hours.toFixed(2)),
-            parseFloat(dailyEarnings.toFixed(2)),
-            parseFloat(e.commuteAmount.toFixed(2)),
-            parseFloat(tips.toFixed(2)),
-            parseFloat((dailyEarnings + e.commuteAmount).toFixed(2)),
-          ]);
+          const total = dailyEarnings + e.commuteAmount;
+          totalHours += hours; totalEarnings += dailyEarnings;
+          totalCommute += e.commuteAmount; totalTips += tips; totalTotal += total;
+
+          const rowData: Record<FieldKey, string | number> = {
+            date: `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`,
+            day: `יום ${DAY_NAMES_HE[d.getDay()]}`,
+            clockIn: shift.clockIn,
+            clockOut: shift.clockOut,
+            hours: parseFloat(hours.toFixed(2)),
+            dailyEarnings: parseFloat(dailyEarnings.toFixed(2)),
+            commute: parseFloat(e.commuteAmount.toFixed(2)),
+            tips: parseFloat(tips.toFixed(2)),
+            total: parseFloat(total.toFixed(2)),
+          };
+          rows.push(activeFields.map((f) => rowData[f.key]));
         }
-        rows.push(['סה"כ', "", "", "",
-          parseFloat(totalHours.toFixed(2)),
-          parseFloat(totalEarnings.toFixed(2)),
-          parseFloat(totalCommute.toFixed(2)),
-          parseFloat(totalTips.toFixed(2)),
-          parseFloat((totalEarnings + totalCommute).toFixed(2)),
-        ]);
+
+        const totalsData: Record<FieldKey, string | number> = {
+          date: 'סה"כ', day: "", clockIn: "", clockOut: "",
+          hours: parseFloat(totalHours.toFixed(2)),
+          dailyEarnings: parseFloat(totalEarnings.toFixed(2)),
+          commute: parseFloat(totalCommute.toFixed(2)),
+          tips: parseFloat(totalTips.toFixed(2)),
+          total: parseFloat(totalTotal.toFixed(2)),
+        };
+        rows.push(activeFields.map((f) => totalsData[f.key]));
 
         const ws = XLSX.utils.aoa_to_sheet(rows);
-        ws["!cols"] = [{ wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 14 }];
+        ws["!cols"] = activeFields.map((f) => ({ wch: colWidths[f.key] }));
         XLSX.utils.book_append_sheet(wb, ws, mo.label);
       }
 
@@ -123,53 +160,6 @@ export default function ExportPage() {
       XLSX.writeFile(wb, fileName);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleExportHours = async () => {
-    if (!selectedJob || selectedList.length === 0) {
-      alert("בחר/י לפחות חודש אחד לייצוא");
-      return;
-    }
-    setLoadingHours(true);
-    try {
-      const XLSX = await import("xlsx");
-      const wb = XLSX.utils.book_new();
-
-      for (const mo of selectedList) {
-        const prefix = `${mo.year}-${String(mo.month).padStart(2, "0")}`;
-        const shifts = await db.shifts
-          .where("jobId").equals(selectedJob.id)
-          .and((s) => s.date.startsWith(prefix))
-          .toArray();
-        const workShifts = shifts.filter((s) => s.isWorkDay).sort((a, b) => a.date.localeCompare(b.date));
-
-        const rows: (string | number)[][] = [["תאריך", "יום", "שעת כניסה", "שעת יציאה", 'סה"כ שעות']];
-        let totalHours = 0;
-
-        for (const shift of workShifts) {
-          const d = new Date(shift.date + "T00:00:00");
-          const hours = calcWorkedHours(shift);
-          totalHours += hours;
-          rows.push([
-            `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`,
-            `יום ${DAY_NAMES_HE[d.getDay()]}`,
-            shift.clockIn, shift.clockOut,
-            parseFloat(hours.toFixed(2)),
-          ]);
-        }
-        rows.push(['סה"כ', "", "", "", parseFloat(totalHours.toFixed(2))]);
-
-        const ws = XLSX.utils.aoa_to_sheet(rows);
-        ws["!cols"] = [{ wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 14 }];
-        XLSX.utils.book_append_sheet(wb, ws, mo.label);
-      }
-
-      const safeName = selectedJob.name.replace(/[<>:|"?*\/\\]/g, "_");
-      const fileName = `שעות_${safeName}_${new Date().toLocaleDateString("he-IL").replace(/\//g, "-")}.xlsx`;
-      XLSX.writeFile(wb, fileName);
-    } finally {
-      setLoadingHours(false);
     }
   };
 
@@ -194,16 +184,16 @@ export default function ExportPage() {
       )}
 
       {jobs.length > 0 && (
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-5">
           {/* Job selector */}
           {jobs.length > 1 && (
-            <div className="flex gap-1 bg-gray-200 rounded-xl p-2">
+            <div className="flex bg-gray-100 rounded-xl p-1 gap-1 self-center w-fit mx-auto">
               {jobs.map((j) => (
                 <button
                   key={j.id}
                   onClick={() => setSelectedJob(j)}
-                  className={`flex-1 py-1 text-sm font-medium rounded-lg transition-colors ${
-                    selectedJob?.id === j.id ? "text-white shadow-sm" : "bg-white text-gray-700 shadow-sm"
+                  className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                    selectedJob?.id === j.id ? "text-white shadow-sm" : "text-gray-500"
                   }`}
                   style={selectedJob?.id === j.id ? { backgroundColor: j.color } : undefined}
                 >
@@ -215,7 +205,6 @@ export default function ExportPage() {
 
           {/* Month selection */}
           <div>
-            {/* Year navigator */}
             <div className="flex items-center justify-between mb-3">
               <button onClick={() => navigateYear(-1)} className="p-1.5 text-gray-500 hover:text-gray-800">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path d="m9 18 6-6-6-6" /></svg>
@@ -245,9 +234,7 @@ export default function ExportPage() {
                     onClick={() => !isFuture && toggleMonth(m)}
                     disabled={isFuture}
                     className={`flex flex-col items-center justify-center rounded-xl py-2.5 px-1 text-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
-                      sel
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      sel ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
                     <span className="text-[11px] font-semibold leading-tight">{MONTH_NAMES_HE[m - 1]}</span>
@@ -257,10 +244,38 @@ export default function ExportPage() {
             </div>
           </div>
 
-          {/* Export buttons */}
+          {/* Field selector */}
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-2">מה יהיה בקובץ</label>
+            <div className="rounded-2xl border border-gray-100 overflow-y-auto bg-white max-h-48">
+              {EXPORT_FIELDS.map((f, idx) => {
+                const checked = selectedFields.has(f.key);
+                return (
+                  <button
+                    key={f.key}
+                    onClick={() => toggleField(f.key)}
+                    className={`w-full flex items-center justify-between px-4 py-3.5 text-sm transition-colors ${
+                      idx !== EXPORT_FIELDS.length - 1 ? "border-b border-gray-100" : ""
+                    } ${checked ? "text-gray-900" : "text-gray-400"}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-5 h-5 flex items-center justify-center flex-shrink-0 ${checked ? "text-green-500" : "text-gray-200"}`}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="w-5 h-5">
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                      </div>
+                      <span className="font-medium">{f.label}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Export button */}
           <button
             onClick={handleExport}
-            disabled={loading || selectedCount === 0}
+            disabled={loading || selectedCount === 0 || selectedFields.size === 0}
             className="w-full py-3.5 bg-green-600 text-white font-semibold rounded-2xl text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? <span>מייצא...</span> : (
@@ -274,28 +289,6 @@ export default function ExportPage() {
               </>
             )}
           </button>
-
-          <button
-            onClick={handleExportHours}
-            disabled={loadingHours || selectedCount === 0}
-            className="w-full py-3.5 bg-blue-600 text-white font-semibold rounded-2xl text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {loadingHours ? <span>מייצא...</span> : (
-              <>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                <span>ייצוא טבלת שעות {selectedCount > 0 ? `(${selectedCount} חודשים)` : ""}</span>
-              </>
-            )}
-          </button>
-
-          {/* Info */}
-          <div className="bg-gray-50 rounded-2xl px-4 py-3 space-y-1">
-            <p className="text-xs text-gray-500"><span className="font-medium text-gray-600">ייצוא מלא</span> — שכר, נסיעות, טיפים וסה״כ</p>
-            <p className="text-xs text-gray-500"><span className="font-medium text-gray-600">טבלת שעות</span> — תאריך, שעות כניסה/יציאה וסה״כ שעות בלבד</p>
-          </div>
         </div>
       )}
 
@@ -307,12 +300,12 @@ export default function ExportPage() {
             <h2 className="text-base font-bold text-gray-900 mb-4">ייצוא לאקסל — מה יש פה?</h2>
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-semibold text-gray-800 mb-1">ייצוא מלא</p>
-                <p className="text-sm text-gray-600 leading-relaxed">מייצא קובץ Excel עם כל המשמרות של השנה — כולל שעות, תעריפים, שעות נוספות, שבת וחג ורווח יומי.</p>
+                <p className="text-sm font-semibold text-gray-800 mb-1">בחירת חודשים</p>
+                <p className="text-sm text-gray-600 leading-relaxed">לחץ/י על חודש אחד או יותר כדי לכלול אותו בייצוא. כל חודש ייצוא יופיע כגיליון נפרד בקובץ ה-Excel.</p>
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-800 mb-1">ייצוא שעות בלבד</p>
-                <p className="text-sm text-gray-600 leading-relaxed">מייצא קובץ פשוט עם תאריכים ושעות כניסה/יציאה בלבד — מתאים לדיווח למעסיק.</p>
+                <p className="text-sm font-semibold text-gray-800 mb-1">בחירת שדות</p>
+                <p className="text-sm text-gray-600 leading-relaxed">סמן/י אילו עמודות לכלול בקובץ — למשל, רק שעות כניסה/יציאה לדיווח למעסיק, או שכר מלא לחישוב אישי.</p>
               </div>
             </div>
             <button

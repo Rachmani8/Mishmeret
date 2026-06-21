@@ -240,17 +240,16 @@ export default function ClockPage() {
 
       {/* ── Job selector (idle only, multi-job) ─────────────────────── */}
       {jobs.length > 1 && (clockState === "idle" || clockState === "reviewed") && (
-        <div className="flex gap-2 mb-8 w-full max-w-xs">
+        <div className="flex bg-gray-100 rounded-xl p-1 gap-1 w-fit mx-auto mb-8">
           {jobs.map((j) => {
             const isActive = clockJob?.id === j.id;
-            const color = j.color ?? "#3B82F6";
             return (
               <button
                 key={j.id}
                 onClick={() => setClockJob(j)}
-                style={isActive ? { backgroundColor: color, borderColor: color } : undefined}
-                className={`flex-1 py-2 text-sm font-medium rounded-xl border transition-colors ${
-                  isActive ? "text-white" : "border-gray-200 text-gray-600"
+                style={isActive ? { backgroundColor: j.color ?? "#3B82F6" } : undefined}
+                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  isActive ? "text-white shadow-sm" : "text-gray-500"
                 }`}
               >
                 {j.name}
