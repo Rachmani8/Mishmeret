@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { db } from "@/lib/db";
 import type { Job } from "@/lib/db";
 import { useShabbatTimes } from "@/lib/useShabbatTimes";
@@ -16,15 +16,13 @@ export default function ExportPage() {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
-
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [year, setYear] = useState(currentYear);
-  const [selected, setSelected] = useState<Set<number>>(new Set([currentMonth]));
+  const [selected, setSelected] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(false);
   const [loadingHours, setLoadingHours] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
-  const currentMonthRef = useRef<HTMLButtonElement>(null);
   const shabbatTimes = useShabbatTimes(year);
   const holidays = useHolidayTimes(year);
 
@@ -35,13 +33,6 @@ export default function ExportPage() {
       if (sorted.length > 0) setSelectedJob(sorted[0]);
     });
   }, []);
-
-  // Scroll current month into view when on current year
-  useEffect(() => {
-    if (year === currentYear) {
-      currentMonthRef.current?.scrollIntoView({ block: "nearest", behavior: "instant" });
-    }
-  }, [year, currentYear]);
 
   const navigateYear = (dir: -1 | 1) => {
     const next = year + dir;
@@ -244,28 +235,22 @@ export default function ExportPage() {
               </div>
             </div>
 
-            <div className="space-y-1.5 max-h-64 overflow-y-auto">
+            <div className="grid grid-cols-6 gap-1.5">
               {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
                 const sel = selected.has(m);
-                const isCurrent = year === currentYear && m === currentMonth;
+                const isFuture = year === currentYear && m > currentMonth;
                 return (
                   <button
                     key={m}
-                    ref={isCurrent ? currentMonthRef : undefined}
-                    onClick={() => toggleMonth(m)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors text-sm ${
+                    onClick={() => !isFuture && toggleMonth(m)}
+                    disabled={isFuture}
+                    className={`flex flex-col items-center justify-center rounded-xl py-2.5 px-1 text-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
                       sel
-                        ? "border-blue-500 bg-blue-50 text-blue-800"
-                        : "border-gray-200 text-gray-700 hover:border-gray-300"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
-                    <span className="font-medium">{MONTH_NAMES_HE[m - 1]}</span>
-                    {isCurrent && !sel && <span className="text-xs text-gray-400">חודש נוכחי</span>}
-                    {sel && (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4 text-blue-600">
-                        <path d="M20 6 9 17l-5-5" />
-                      </svg>
-                    )}
+                    <span className="text-[11px] font-semibold leading-tight">{MONTH_NAMES_HE[m - 1]}</span>
                   </button>
                 );
               })}
