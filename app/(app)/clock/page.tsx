@@ -367,7 +367,7 @@ export default function ClockPage() {
         {/* CLOCKED-OUT → verify day */}
         {clockState === "clocked-out" && (
           <button
-            onClick={() => setSelectedDate(todayStr)}
+            onClick={() => { setDrawerShiftId(null); setSelectedDate(todayStr); }}
             className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-5 h-5">
