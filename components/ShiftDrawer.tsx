@@ -90,28 +90,31 @@ export default function ShiftDrawer({ date, job, jobs, holidayLabel, openShiftId
   const dayNames = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
   const dayLabel = `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()} — יום ${dayNames[dateObj.getDay()]}`;
   const isSat = dateObj.getDay() === 6;
-  const headerColor = holidayLabel ? "text-purple-600" : isSat ? "text-orange-500" : "text-gray-900";
+  const headerColor = holidayLabel ? "text-purple-400" : isSat ? "text-orange-400" : "text-[#E8EEFF]";
 
   const formJob = form ? (jobs.find((j) => j.id === form.jobId) ?? job) : null;
-  const handleColor = formJob?.color ?? "#d1d5db";
+  const handleColor = formJob?.color ?? "#3B7FF5";
   const jobNameMap = Object.fromEntries(jobs.map((j) => [j.id, j.name]));
+
+  const inputClass = "w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3B7FF5]/40 bg-[#0C1221] text-[#E8EEFF]";
+  const inputStyle = { borderColor: "rgba(255,255,255,0.15)" };
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed bottom-16 right-0 left-0 z-50 bg-white rounded-t-2xl shadow-2xl max-w-[430px] mx-auto animate-slide-up">
+      <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed bottom-16 right-0 left-0 z-50 bg-[#162038] rounded-t-2xl shadow-2xl max-w-[430px] mx-auto animate-slide-up border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full transition-colors duration-200" style={{ backgroundColor: handleColor }} />
         </div>
 
-        <div className="px-5 pb-6 max-h-[75vh] overflow-y-auto">
+        <div className="px-5 pb-6 max-h-[75vh] overflow-y-auto" dir="rtl">
           {/* Header */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-100 mb-4">
+          <div className="flex items-center justify-between py-3 border-b mb-4" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
             <div className="flex items-center gap-1">
               {viewMode === "form" && (
                 <button
                   onClick={() => { setViewMode("list"); setEditingShift(null); setForm(null); }}
-                  className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 -me-1"
+                  className="text-[#6B8FAA] hover:text-[#E8EEFF] p-1 rounded-lg hover:bg-white/[0.05] -me-1 transition-colors"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
                     <path d="m15 18-6-6 6-6" />
@@ -123,7 +126,7 @@ export default function ShiftDrawer({ date, job, jobs, holidayLabel, openShiftId
                 {holidayLabel && <p className={`text-xs font-medium mt-0.5 ${headerColor}`}>{holidayLabel}</p>}
               </div>
             </div>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100">
+            <button onClick={onClose} className="text-[#6B8FAA] hover:text-[#E8EEFF] p-1 rounded-lg hover:bg-white/[0.05] transition-colors">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
                 <path d="M18 6 6 18M6 6l12 12" />
               </svg>
@@ -135,47 +138,48 @@ export default function ShiftDrawer({ date, job, jobs, holidayLabel, openShiftId
             <div className="space-y-2">
               {dayShifts.map((s, i) => {
                 const rowJob = jobs.find((j) => j.id === s.jobId);
-                const rowColor = rowJob?.color ?? "#EF4444";
+                const rowColor = rowJob?.color ?? "#3B7FF5";
                 return (
-                <div
-                  key={s.id}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl border"
-                  style={{ backgroundColor: `${rowColor}18`, borderColor: rowColor }}
-                >
-                  <span className="text-sm text-gray-600 flex-none">
-                    {dayShifts.length > 1 ? `${i + 1} · ` : ""}
-                    {jobNameMap[s.jobId] ?? ""}
-                  </span>
-                  <span dir="ltr" className="text-sm font-bold text-gray-900 flex-1 text-center">
-                    {s.clockIn} → {s.clockOut}
-                  </span>
-                  <div className="flex gap-3 flex-none">
-                    <button
-                      onClick={() => openEditForm(s)}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors underline"
-                    >
-                      ערוך
-                    </button>
-                    <button
-                      onClick={async () => {
-                        await db.shifts.delete(s.id);
-                        onDelete(s.id);
-                        await loadDayShifts(date!);
-                      }}
-                      className="text-sm font-medium text-red-500 hover:text-red-600 transition-colors underline"
-                    >
-                      מחק
-                    </button>
+                  <div
+                    key={s.id}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl border"
+                    style={{ backgroundColor: `${rowColor}18`, borderColor: rowColor }}
+                  >
+                    <span className="text-sm text-[#6B8FAA] flex-none">
+                      {dayShifts.length > 1 ? `${i + 1} · ` : ""}
+                      {jobNameMap[s.jobId] ?? ""}
+                    </span>
+                    <span dir="ltr" className="text-sm font-bold text-[#E8EEFF] flex-1 text-center">
+                      {s.clockIn} → {s.clockOut}
+                    </span>
+                    <div className="flex gap-3 flex-none">
+                      <button
+                        onClick={() => openEditForm(s)}
+                        className="text-sm font-medium text-[#3B7FF5] hover:text-[#6AADFF] transition-colors underline"
+                      >
+                        ערוך
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await db.shifts.delete(s.id);
+                          onDelete(s.id);
+                          await loadDayShifts(date!);
+                        }}
+                        className="text-sm font-medium text-red-400 hover:text-red-300 transition-colors underline"
+                      >
+                        מחק
+                      </button>
+                    </div>
                   </div>
-                </div>
                 );
               })}
               {dayShifts.length === 0 && (
-                <p className="text-sm text-gray-400 text-center py-6">אין משמרות ביום זה</p>
+                <p className="text-sm text-[#3E5672] text-center py-6">אין משמרות ביום זה</p>
               )}
               <button
                 onClick={openNewForm}
-                className="w-full py-3 rounded-xl border border-dashed border-gray-300 text-sm font-medium text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors"
+                className="w-full py-3 rounded-xl border-dashed border text-sm font-medium text-[#6B8FAA] hover:text-[#E8EEFF] hover:border-white/[0.2] transition-colors"
+                style={{ borderColor: "rgba(255,255,255,0.12)" }}
               >
                 + הוסף משמרת
               </button>
@@ -189,19 +193,19 @@ export default function ShiftDrawer({ date, job, jobs, holidayLabel, openShiftId
                 {/* Job selector */}
                 {jobs.length > 1 && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">משרה</label>
+                    <label className="block text-sm font-medium text-[#6B8FAA] mb-1.5">משרה</label>
                     <select
                       value={form.jobId}
                       onChange={(e) => setForm({ ...form, jobId: e.target.value })}
-                      className="w-full border rounded-lg px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border rounded-lg px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#3B7FF5]/40"
                       style={{
-                        backgroundColor: `${formJob?.color ?? "#EF4444"}18`,
-                        borderColor: formJob?.color ?? "#EF4444",
-                        color: formJob?.color ?? "#EF4444",
+                        backgroundColor: `${formJob?.color ?? "#3B7FF5"}22`,
+                        borderColor: formJob?.color ?? "#3B7FF5",
+                        color: formJob?.color ?? "#3B7FF5",
                       }}
                     >
                       {jobs.map((j) => (
-                        <option key={j.id} value={j.id} style={{ color: "#111827", backgroundColor: "#ffffff" }}>{j.name}</option>
+                        <option key={j.id} value={j.id} style={{ color: "#E8EEFF", backgroundColor: "#162038" }}>{j.name}</option>
                       ))}
                     </select>
                   </div>
@@ -210,28 +214,30 @@ export default function ShiftDrawer({ date, job, jobs, holidayLabel, openShiftId
                 {/* Clock in / out */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">שעת כניסה</label>
+                    <label className="block text-sm font-medium text-[#6B8FAA] mb-1.5">שעת כניסה</label>
                     <input
                       type="time"
                       value={form.clockIn}
                       onChange={(e) => setForm({ ...form, clockIn: e.target.value })}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                      className={`${inputClass} text-center`}
+                      style={inputStyle}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">שעת יציאה</label>
+                    <label className="block text-sm font-medium text-[#6B8FAA] mb-1.5">שעת יציאה</label>
                     <input
                       type="time"
                       value={form.clockOut}
                       onChange={(e) => setForm({ ...form, clockOut: e.target.value })}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                      className={`${inputClass} text-center`}
+                      style={inputStyle}
                     />
                   </div>
                 </div>
 
                 {/* Tips */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">טיפים (₪)</label>
+                  <label className="block text-sm font-medium text-[#6B8FAA] mb-1.5">טיפים (₪)</label>
                   <input
                     type="number"
                     min={0}
@@ -239,22 +245,24 @@ export default function ShiftDrawer({ date, job, jobs, holidayLabel, openShiftId
                     value={form.tips ?? 0}
                     onChange={(e) => setForm({ ...form, tips: Number(e.target.value) || 0 })}
                     onFocus={(e) => e.target.select()}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={inputClass}
+                    style={inputStyle}
                     placeholder="0"
                   />
-                  <p className="text-xs text-gray-400 mt-1">מזומן שהתקבל ישירות — לא נכלל בחישוב השכר</p>
+                  <p className="text-xs text-[#3E5672] mt-1">מזומן שהתקבל ישירות — לא נכלל בחישוב השכר</p>
                 </div>
 
                 {/* Notes */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">הערות</label>
+                  <label className="block text-sm font-medium text-[#6B8FAA] mb-1.5">הערות</label>
                   <textarea
                     rows={2}
                     maxLength={500}
                     value={form.notes}
                     onChange={(e) => setForm({ ...form, notes: e.target.value })}
                     placeholder="הוסף/י הערה..."
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className={`${inputClass} resize-none`}
+                    style={inputStyle}
                   />
                 </div>
               </div>
@@ -263,14 +271,14 @@ export default function ShiftDrawer({ date, job, jobs, holidayLabel, openShiftId
                 {editingShift && (
                   <button
                     onClick={handleDelete}
-                    className="flex-none px-4 py-2.5 text-sm font-medium text-red-500 border border-red-300 rounded-xl hover:bg-red-50 transition-colors"
+                    className="flex-none px-4 py-2.5 text-sm font-medium text-red-400 border border-red-500/40 rounded-xl hover:bg-red-900/20 transition-colors"
                   >
                     מחק/י
                   </button>
                 )}
                 <button
                   onClick={handleSave}
-                  className="flex-1 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors"
+                  className="flex-1 py-2.5 text-sm font-semibold text-white bg-[#3B7FF5] rounded-xl hover:bg-[#2B6EE0] transition-colors"
                 >
                   שמור/י
                 </button>

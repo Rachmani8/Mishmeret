@@ -81,13 +81,11 @@ export default function ClockPage() {
 
   useEffect(() => { loadTodayShifts(); }, [loadTodayShifts]);
 
-  // Tick current time every second (idle display)
   useEffect(() => {
     const id = setInterval(() => setCurrentTime(nowTime()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  // Elapsed timer while clocked in
   useEffect(() => {
     if (clockState !== "clocked-in" || !todayClockIn) return;
     const start = timeToSeconds(todayClockIn);
@@ -101,7 +99,6 @@ export default function ClockPage() {
     return () => clearInterval(id);
   }, [clockState, todayClockIn]);
 
-  // Guard: reset to idle if tracked shifts were deleted externally
   useEffect(() => {
     if (!shiftsLoadedRef.current) return;
     if (clockState === "idle" || clockState === "clocked-in") return;
@@ -233,232 +230,221 @@ export default function ClockPage() {
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-64px)]" dir="rtl">
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 pt-4 pb-3">
-        <h1 className="text-xl font-bold text-gray-900">שעון</h1>
+      {/* Header */}
+      <div className="sticky top-0 z-10 px-4 pt-4 pb-3 border-b" style={{ background: "#0C1221", borderColor: "rgba(255,255,255,0.07)" }}>
+        <h1 className="text-xl font-bold text-[#E8EEFF]">שעון</h1>
       </div>
+
       <div className="flex flex-col items-center justify-center flex-1 px-6 py-8">
 
-      {/* ── Job selector (idle only, multi-job) ─────────────────────── */}
-      {jobs.length > 1 && (clockState === "idle" || clockState === "reviewed") && (
-        <div className="flex bg-gray-100 rounded-xl p-1 gap-1 w-fit mx-auto mb-8">
-          {jobs.map((j) => {
-            const isActive = clockJob?.id === j.id;
-            return (
-              <button
-                key={j.id}
-                onClick={() => setClockJob(j)}
-                style={isActive ? { backgroundColor: j.color ?? "#3B82F6" } : undefined}
-                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                  isActive ? "text-white shadow-sm" : "text-gray-500"
-                }`}
-              >
-                {j.name}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* ── Animated clock circle ───────────────────────────────────── */}
-      <div className="relative w-52 h-52 mb-8 flex-shrink-0">
-        {/* Idle ring — static blue */}
-        {clockState === "idle" && (
-          <div className="absolute inset-0 rounded-full border-4 border-blue-500" />
+        {/* Job selector (idle/reviewed, multi-job) */}
+        {jobs.length > 1 && (clockState === "idle" || clockState === "reviewed") && (
+          <div className="flex bg-[#162038] rounded-xl p-1 gap-1 w-fit mx-auto mb-8">
+            {jobs.map((j) => {
+              const isActive = clockJob?.id === j.id;
+              return (
+                <button
+                  key={j.id}
+                  onClick={() => setClockJob(j)}
+                  style={isActive ? { backgroundColor: j.color ?? "#3B7FF5" } : undefined}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                    isActive ? "text-white" : "text-[#6B8FAA]"
+                  }`}
+                >
+                  {j.name}
+                </button>
+              );
+            })}
+          </div>
         )}
 
-        {/* Clocked-in ring — breathing green pulse */}
-        {clockState === "clocked-in" && (
-          <div className="absolute inset-0 rounded-full border-4 border-green-500 animate-pulse-ring-green" />
-        )}
-
-        {/* Clocked-out ring — static gray */}
-        {clockState === "clocked-out" && (
-          <div className="absolute inset-0 rounded-full border-4 border-gray-200" />
-        )}
-
-        {/* Reviewed ring — static green */}
-        {clockState === "reviewed" && (
-          <div className="absolute inset-0 rounded-full border-4 border-green-400" />
-        )}
-
-        {/* Circle content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+        {/* Clock circle */}
+        <div className="relative w-52 h-52 mb-8 flex-shrink-0 rounded-full bg-[#162038]">
           {clockState === "idle" && (
-            <>
-              <span className="text-4xl font-bold tabular-nums text-gray-900">{currentTime}</span>
-              <span className="text-xs text-gray-400">שעה נוכחית</span>
-            </>
+            <div className="absolute inset-0 rounded-full border-4 border-[#3B7FF5]" />
           )}
           {clockState === "clocked-in" && (
-            <>
-              <span className="text-3xl font-bold tabular-nums text-green-600" dir="ltr">{formatElapsed(elapsed)}</span>
-              <span className="text-xs text-gray-400" dir="ltr">שעות:דקות</span>
-            </>
+            <div className="absolute inset-0 rounded-full border-4 border-green-500 animate-pulse-ring-green" />
           )}
-          {clockState === "clocked-out" && todayClockIn && todayClockOut && (
-            <>
-              <span className="text-3xl font-bold tabular-nums text-gray-700">
-                {calcDuration(todayClockIn, todayClockOut)}
-              </span>
-              <span className="text-xs text-gray-400">שעות:דקות</span>
-            </>
+          {clockState === "clocked-out" && (
+            <div className="absolute inset-0 rounded-full border-4 border-[#3E5672]" />
           )}
           {clockState === "reviewed" && (
-            <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth={2} className="w-14 h-14">
-              <path d="M20 6L9 17l-5-5" />
-            </svg>
+            <div className="absolute inset-0 rounded-full border-4 border-green-500" />
+          )}
+
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+            {clockState === "idle" && (
+              <>
+                <span className="text-4xl font-bold tabular-nums text-[#E8EEFF]">{currentTime}</span>
+                <span className="text-xs text-[#6B8FAA]">שעה נוכחית</span>
+              </>
+            )}
+            {clockState === "clocked-in" && (
+              <>
+                <span className="text-3xl font-bold tabular-nums text-green-400" dir="ltr">{formatElapsed(elapsed)}</span>
+                <span className="text-xs text-[#6B8FAA]" dir="ltr">שעות:דקות</span>
+              </>
+            )}
+            {clockState === "clocked-out" && todayClockIn && todayClockOut && (
+              <>
+                <span className="text-3xl font-bold tabular-nums text-[#E8EEFF]">
+                  {calcDuration(todayClockIn, todayClockOut)}
+                </span>
+                <span className="text-xs text-[#6B8FAA]">שעות:דקות</span>
+              </>
+            )}
+            {clockState === "reviewed" && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth={2} className="w-14 h-14">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            )}
+          </div>
+        </div>
+
+        {/* Status text */}
+        <div className="mb-8 text-center min-h-[32px] flex items-center justify-center">
+          {clockState === "idle" && (
+            <p className="text-sm text-[#6B8FAA]">אין משמרת פעילה</p>
+          )}
+          {clockState === "clocked-in" && (
+            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-400 bg-green-900/20 px-3 py-1.5 rounded-full border border-green-700/40">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              משמרת פעילה — כניסה {todayClockIn}
+            </span>
+          )}
+          {clockState === "clocked-out" && (
+            <p className="text-sm text-[#6B8FAA]">המשמרת הסתיימה — אשר/י את היום</p>
+          )}
+          {clockState === "reviewed" && !hasTwoShifts && (
+            <p className="text-sm text-green-400 font-medium">היום אושר ✓</p>
           )}
         </div>
-      </div>
 
-      {/* ── Status text ─────────────────────────────────────────────── */}
-      <div className="mb-8 text-center min-h-[32px] flex items-center justify-center">
-        {clockState === "idle" && (
-          <p className="text-sm text-gray-400">אין משמרת פעילה</p>
-        )}
-        {clockState === "clocked-in" && (
-          <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700 bg-green-50 px-3 py-1.5 rounded-full border border-green-200">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            משמרת פעילה — כניסה {todayClockIn}
-          </span>
-        )}
-        {clockState === "clocked-out" && (
-          <p className="text-sm text-gray-500">המשמרת הסתיימה — אשר/י את היום</p>
-        )}
-        {clockState === "reviewed" && !hasTwoShifts && (
-          <p className="text-sm text-green-600 font-medium">היום אושר ✓</p>
-        )}
-      </div>
+        {/* Primary action */}
+        <div className="w-full max-w-xs space-y-3">
 
-      {/* ── Primary action area ─────────────────────────────────────── */}
-      <div className="w-full max-w-xs space-y-3">
-
-        {/* IDLE → clock in */}
-        {clockState === "idle" && (
-          <button
-            onClick={handleClockIn}
-            disabled={!clockJob}
-            className="w-full py-4 bg-green-500 hover:bg-green-600 disabled:opacity-40 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
-            התחל משמרת
-          </button>
-        )}
-
-        {/* CLOCKED-IN → clock out */}
-        {clockState === "clocked-in" && (
-          <button
-            onClick={handleClockOut}
-            className="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-              <rect x="4" y="4" width="16" height="16" rx="2" />
-            </svg>
-            סיום משמרת
-          </button>
-        )}
-
-        {/* CLOCKED-OUT → verify day */}
-        {clockState === "clocked-out" && (
-          <button
-            onClick={() => { setDrawerShiftId(clockShiftId); setSelectedDate(todayStr); }}
-            className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-5 h-5">
-              <path d="M9 11l3 3L22 4" />
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-            </svg>
-            ווידוא יום
-          </button>
-        )}
-
-        {/* REVIEWED → show summaries + optional second shift */}
-        {clockState === "reviewed" && (
-          <>
-            {hasTwoShifts ? (
-              <div className="space-y-2">
-                {([firstClockShiftId, clockShiftId] as string[]).map((sid, i) => {
-                  const s = todayShifts.find((x) => x.id === sid);
-                  const j = shiftJobFor(sid);
-                  const color = j ? (jobColorMap[j.id] ?? "#3B82F6") : "#3B82F6";
-                  if (!s) return null;
-                  return (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="flex-1 px-3 py-2 rounded-2xl" style={{ backgroundColor: `${color}1a` }}>
-                        {j && (
-                          <div className="text-xs font-semibold leading-tight" style={{ color }}>
-                            {j.name}
-                          </div>
-                        )}
-                        <div className="text-xs text-gray-400">משמרת {i + 1}</div>
-                        <div className="text-sm font-bold text-gray-900" dir="ltr">
-                          {s.clockIn} → {s.clockOut}
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => { setDrawerShiftId(sid); setSelectedDate(todayStr); }}
-                        className="w-7 h-7 rounded-xl bg-orange-500 hover:bg-orange-600 flex items-center justify-center transition-colors text-white flex-none"
-                      >
-                        {editIcon}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                {(() => {
-                  const singleJob = shiftJobFor(clockShiftId) ?? clockJob;
-                  const color = singleJob ? (jobColorMap[singleJob.id] ?? "#3B82F6") : "#3B82F6";
-                  return (
-                    <div className="flex-1 px-3 py-2 rounded-2xl" style={{ backgroundColor: `${color}1a` }}>
-                      {singleJob && (
-                        <div className="text-xs font-semibold leading-tight" style={{ color }}>
-                          {singleJob.name}
-                        </div>
-                      )}
-                      <div className="text-xs text-gray-400">היום</div>
-                      <div className="text-sm font-bold text-gray-900" dir="ltr">
-                        {todayClockIn} → {todayClockOut}
-                      </div>
-                    </div>
-                  );
-                })()}
-                <button
-                  onClick={() => { setDrawerShiftId(clockShiftId); setSelectedDate(todayStr); }}
-                  className="w-7 h-7 rounded-xl bg-orange-500 hover:bg-orange-600 flex items-center justify-center transition-colors text-white flex-none"
-                >
-                  {editIcon}
-                </button>
-              </div>
-            )}
-
+          {clockState === "idle" && (
             <button
               onClick={handleClockIn}
               disabled={!clockJob}
-              className="w-full py-3.5 bg-green-500 hover:bg-green-600 disabled:opacity-40 text-white font-bold rounded-2xl text-sm flex items-center justify-center gap-1.5 transition-colors"
+              className="w-full py-4 bg-[#3B7FF5] hover:bg-[#2B6EE0] disabled:opacity-40 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
             >
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
-              כניסה למשמרת נוספת
+              התחל משמרת
             </button>
-          </>
-        )}
-      </div>
+          )}
 
-      {/* ── ShiftDrawer ─────────────────────────────────────────────── */}
-      <ShiftDrawer
-        date={selectedDate}
-        job={clockJob}
-        jobs={jobs}
-        openShiftId={drawerShiftId}
-        onClose={() => { setSelectedDate(null); setDrawerShiftId(null); loadTodayShifts(); }}
-        onSave={handleSave}
-        onDelete={handleDelete}
-      />
+          {clockState === "clocked-in" && (
+            <button
+              onClick={handleClockOut}
+              className="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+              </svg>
+              סיום משמרת
+            </button>
+          )}
+
+          {clockState === "clocked-out" && (
+            <button
+              onClick={() => { setDrawerShiftId(clockShiftId); setSelectedDate(todayStr); }}
+              className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-2 transition-colors"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-5 h-5">
+                <path d="M9 11l3 3L22 4" />
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+              </svg>
+              ווידוא יום
+            </button>
+          )}
+
+          {clockState === "reviewed" && (
+            <>
+              {hasTwoShifts ? (
+                <div className="space-y-2">
+                  {([firstClockShiftId, clockShiftId] as string[]).map((sid, i) => {
+                    const s = todayShifts.find((x) => x.id === sid);
+                    const j = shiftJobFor(sid);
+                    const color = j ? (jobColorMap[j.id] ?? "#3B7FF5") : "#3B7FF5";
+                    if (!s) return null;
+                    return (
+                      <div key={i} className="flex items-center gap-2">
+                        <div className="flex-1 px-3 py-2 rounded-2xl" style={{ backgroundColor: `${color}22` }}>
+                          {j && (
+                            <div className="text-xs font-semibold leading-tight" style={{ color }}>
+                              {j.name}
+                            </div>
+                          )}
+                          <div className="text-xs text-[#6B8FAA]">משמרת {i + 1}</div>
+                          <div className="text-sm font-bold text-[#E8EEFF]" dir="ltr">
+                            {s.clockIn} → {s.clockOut}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => { setDrawerShiftId(sid); setSelectedDate(todayStr); }}
+                          className="w-7 h-7 rounded-xl bg-[#3B7FF5] hover:bg-[#2B6EE0] flex items-center justify-center transition-colors text-white flex-none"
+                        >
+                          {editIcon}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  {(() => {
+                    const singleJob = shiftJobFor(clockShiftId) ?? clockJob;
+                    const color = singleJob ? (jobColorMap[singleJob.id] ?? "#3B7FF5") : "#3B7FF5";
+                    return (
+                      <div className="flex-1 px-3 py-2 rounded-2xl" style={{ backgroundColor: `${color}22` }}>
+                        {singleJob && (
+                          <div className="text-xs font-semibold leading-tight" style={{ color }}>
+                            {singleJob.name}
+                          </div>
+                        )}
+                        <div className="text-xs text-[#6B8FAA]">היום</div>
+                        <div className="text-sm font-bold text-[#E8EEFF]" dir="ltr">
+                          {todayClockIn} → {todayClockOut}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <button
+                    onClick={() => { setDrawerShiftId(clockShiftId); setSelectedDate(todayStr); }}
+                    className="w-7 h-7 rounded-xl bg-[#3B7FF5] hover:bg-[#2B6EE0] flex items-center justify-center transition-colors text-white flex-none"
+                  >
+                    {editIcon}
+                  </button>
+                </div>
+              )}
+
+              <button
+                onClick={handleClockIn}
+                disabled={!clockJob}
+                className="w-full py-3.5 bg-[#3B7FF5] hover:bg-[#2B6EE0] disabled:opacity-40 text-white font-bold rounded-2xl text-sm flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                כניסה למשמרת נוספת
+              </button>
+            </>
+          )}
+        </div>
+
+        <ShiftDrawer
+          date={selectedDate}
+          job={clockJob}
+          jobs={jobs}
+          openShiftId={drawerShiftId}
+          onClose={() => { setSelectedDate(null); setDrawerShiftId(null); loadTodayShifts(); }}
+          onSave={handleSave}
+          onDelete={handleDelete}
+        />
       </div>
     </div>
   );

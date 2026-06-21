@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -72,7 +72,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 right-0 left-0 z-50 bg-white border-t border-gray-100 safe-bottom">
+    <nav className="fixed bottom-0 right-0 left-0 z-50 bg-[#0C1221] border-t safe-bottom" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
       <div className="max-w-[430px] mx-auto flex">
         {tabs.map((tab) => {
           const active = pathname === tab.href || pathname.startsWith(tab.href + "/");
@@ -81,10 +81,10 @@ export default function BottomNav() {
               key={tab.href}
               href={tab.href}
               className={`flex-1 flex flex-col items-center gap-0.5 py-2 text-xs font-medium transition-colors ${
-                active ? "text-blue-600" : "text-gray-400 hover:text-gray-600"
+                active ? "text-[#3B7FF5]" : "text-[#3E5672] hover:text-[#6B8FAA]"
               }`}
             >
-              <span className={active ? "text-blue-600" : ""}>{tab.icon}</span>
+              <span>{tab.icon}</span>
               <span>{tab.label}</span>
             </Link>
           );

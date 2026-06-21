@@ -164,36 +164,36 @@ export default function ExportPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="flex flex-col min-h-full" dir="rtl">
       {/* Header */}
-      <div className="px-4 pt-4 pb-3 border-b border-gray-100">
+      <div className="px-4 pt-4 pb-3 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">ייצוא לאקסל</h1>
+          <h1 className="text-xl font-bold text-[#E8EEFF]">ייצוא לאקסל</h1>
           <button
             onClick={() => setInfoOpen(true)}
-            className="w-7 h-7 rounded-full bg-orange-50 text-orange-500 hover:bg-orange-100 flex items-center justify-center text-sm font-bold transition-colors"
+            className="w-7 h-7 rounded-full bg-[#162038] text-[#6B8FAA] hover:text-[#E8EEFF] flex items-center justify-center text-sm font-bold transition-colors"
           >
             ?
           </button>
         </div>
-        <p className="text-sm text-gray-500 mt-0.5">ייצוא נתוני משמרות לקובץ Excel</p>
+        <p className="text-sm text-[#6B8FAA] mt-0.5">ייצוא נתוני משמרות לקובץ Excel</p>
       </div>
 
       {jobs.length === 0 && (
-        <div className="flex-1 flex items-center justify-center text-sm text-gray-400">הגדר/י משרה תחילה</div>
+        <div className="flex-1 flex items-center justify-center text-sm text-[#3E5672]">הגדר/י משרה תחילה</div>
       )}
 
       {jobs.length > 0 && (
         <div className="p-4 space-y-5">
           {/* Job selector */}
           {jobs.length > 1 && (
-            <div className="flex bg-gray-100 rounded-xl p-1 gap-1 self-center w-fit mx-auto">
+            <div className="flex bg-[#162038] rounded-xl p-1 gap-1 self-center w-fit mx-auto">
               {jobs.map((j) => (
                 <button
                   key={j.id}
                   onClick={() => setSelectedJob(j)}
                   className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                    selectedJob?.id === j.id ? "text-white shadow-sm" : "text-gray-500"
+                    selectedJob?.id === j.id ? "text-white" : "text-[#6B8FAA]"
                   }`}
                   style={selectedJob?.id === j.id ? { backgroundColor: j.color } : undefined}
                 >
@@ -206,21 +206,21 @@ export default function ExportPage() {
           {/* Month selection */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <button onClick={() => navigateYear(-1)} className="p-1.5 text-gray-500 hover:text-gray-800">
+              <button onClick={() => navigateYear(-1)} className="p-1.5 text-[#6B8FAA] hover:text-[#E8EEFF] transition-colors">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path d="m9 18 6-6-6-6" /></svg>
               </button>
-              <span className="text-base font-semibold text-gray-800">{year}</span>
-              <button onClick={() => navigateYear(1)} disabled={year >= currentYear} className="p-1.5 text-gray-500 hover:text-gray-800 disabled:opacity-30">
+              <span className="text-base font-semibold text-[#E8EEFF]">{year}</span>
+              <button onClick={() => navigateYear(1)} disabled={year >= currentYear} className="p-1.5 text-[#6B8FAA] hover:text-[#E8EEFF] transition-colors disabled:opacity-30">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path d="m15 18-6-6 6-6" /></svg>
               </button>
             </div>
 
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-gray-700">בחר/י חודשים</label>
+              <label className="text-sm font-medium text-[#E8EEFF]">בחר/י חודשים</label>
               <div className="flex gap-2">
-                <button onClick={selectAll} className="text-xs text-blue-600 hover:underline">בחר/י הכל</button>
-                <span className="text-gray-300">|</span>
-                <button onClick={selectNone} className="text-xs text-gray-500 hover:underline">נקה הכל</button>
+                <button onClick={selectAll} className="text-xs text-[#3B7FF5] hover:underline">בחר/י הכל</button>
+                <span className="text-[#3E5672]">|</span>
+                <button onClick={selectNone} className="text-xs text-[#6B8FAA] hover:underline">נקה הכל</button>
               </div>
             </div>
 
@@ -234,7 +234,7 @@ export default function ExportPage() {
                     onClick={() => !isFuture && toggleMonth(m)}
                     disabled={isFuture}
                     className={`flex flex-col items-center justify-center rounded-xl py-2.5 px-1 text-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
-                      sel ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      sel ? "bg-[#3B7FF5] text-white" : "bg-[#162038] text-[#E8EEFF] hover:bg-[#1C2B4A]"
                     }`}
                   >
                     <span className="text-[11px] font-semibold leading-tight">{MONTH_NAMES_HE[m - 1]}</span>
@@ -246,8 +246,8 @@ export default function ExportPage() {
 
           {/* Field selector */}
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">מה יהיה בקובץ</label>
-            <div className="rounded-2xl border border-gray-100 overflow-y-auto bg-white max-h-48">
+            <label className="text-sm font-medium text-[#E8EEFF] block mb-2">מה יהיה בקובץ</label>
+            <div className="rounded-2xl border overflow-y-auto bg-[#162038] max-h-48" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
               {EXPORT_FIELDS.map((f, idx) => {
                 const checked = selectedFields.has(f.key);
                 return (
@@ -255,11 +255,12 @@ export default function ExportPage() {
                     key={f.key}
                     onClick={() => toggleField(f.key)}
                     className={`w-full flex items-center justify-between px-4 py-3.5 text-sm transition-colors ${
-                      idx !== EXPORT_FIELDS.length - 1 ? "border-b border-gray-100" : ""
-                    } ${checked ? "text-gray-900" : "text-gray-400"}`}
+                      idx !== EXPORT_FIELDS.length - 1 ? "border-b" : ""
+                    } ${checked ? "text-[#E8EEFF]" : "text-[#3E5672]"}`}
+                    style={idx !== EXPORT_FIELDS.length - 1 ? { borderColor: "rgba(255,255,255,0.06)" } : undefined}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 flex items-center justify-center flex-shrink-0 ${checked ? "text-green-500" : "text-gray-200"}`}>
+                      <div className={`w-5 h-5 flex items-center justify-center flex-shrink-0 ${checked ? "text-[#3B7FF5]" : "text-[#243355]"}`}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="w-5 h-5">
                           <path d="M20 6 9 17l-5-5" />
                         </svg>
@@ -276,7 +277,7 @@ export default function ExportPage() {
           <button
             onClick={handleExport}
             disabled={loading || selectedCount === 0 || selectedFields.size === 0}
-            className="w-full py-3.5 bg-green-600 text-white font-semibold rounded-2xl text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-3.5 bg-[#3B7FF5] hover:bg-[#2B6EE0] text-white font-semibold rounded-2xl text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? <span>מייצא...</span> : (
               <>
@@ -295,22 +296,22 @@ export default function ExportPage() {
       {/* Info modal */}
       {infoOpen && (
         <>
-          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={() => setInfoOpen(false)} />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6">
-            <h2 className="text-base font-bold text-gray-900 mb-4">ייצוא לאקסל — מה יש פה?</h2>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setInfoOpen(false)} />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-[#162038] border rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+            <h2 className="text-base font-bold text-[#E8EEFF] mb-4">ייצוא לאקסל — מה יש פה?</h2>
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-semibold text-gray-800 mb-1">בחירת חודשים</p>
-                <p className="text-sm text-gray-600 leading-relaxed">לחץ/י על חודש אחד או יותר כדי לכלול אותו בייצוא. כל חודש ייצוא יופיע כגיליון נפרד בקובץ ה-Excel.</p>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">בחירת חודשים</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">לחץ/י על חודש אחד או יותר לכלול בייצוא. כל חודש יופיע כגיליון נפרד בקובץ ה-Excel.</p>
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-800 mb-1">בחירת שדות</p>
-                <p className="text-sm text-gray-600 leading-relaxed">סמן/י אילו עמודות לכלול בקובץ — למשל, רק שעות כניסה/יציאה לדיווח למעסיק, או שכר מלא לחישוב אישי.</p>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">בחירת שדות</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">סמן/י אילו עמודות לכלול — למשל רק שעות לדיווח למעסיק, או שכר מלא לחישוב אישי.</p>
               </div>
             </div>
             <button
               onClick={() => setInfoOpen(false)}
-              className="mt-6 w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors"
+              className="mt-6 w-full py-2.5 bg-[#3B7FF5] hover:bg-[#2B6EE0] text-white text-sm font-semibold rounded-xl transition-colors"
             >
               הבנתי
             </button>
