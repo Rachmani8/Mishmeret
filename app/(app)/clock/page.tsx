@@ -23,8 +23,7 @@ function timeToSeconds(hhmm: string): number {
 function formatElapsed(seconds: number): string {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 function calcDuration(clockIn: string, clockOut: string): string {
@@ -233,7 +232,11 @@ export default function ClockPage() {
     !!firstClockShiftId && !!clockShiftId && firstClockShiftId !== clockShiftId;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] px-6 py-8" dir="rtl">
+    <div className="flex flex-col min-h-[calc(100vh-64px)]" dir="rtl">
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 pt-4 pb-3">
+        <h1 className="text-xl font-bold text-gray-900">שעון</h1>
+      </div>
+      <div className="flex flex-col items-center justify-center flex-1 px-6 py-8">
 
       {/* ── Job selector (idle only, multi-job) ─────────────────────── */}
       {jobs.length > 1 && (clockState === "idle" || clockState === "reviewed") && (
@@ -259,20 +262,14 @@ export default function ClockPage() {
 
       {/* ── Animated clock circle ───────────────────────────────────── */}
       <div className="relative w-52 h-52 mb-8 flex-shrink-0">
-        {/* Idle ring — breathing blue pulse */}
+        {/* Idle ring — static blue */}
         {clockState === "idle" && (
-          <div className="absolute inset-0 rounded-full border-4 border-blue-500 animate-pulse-ring" />
+          <div className="absolute inset-0 rounded-full border-4 border-blue-500" />
         )}
 
-        {/* Clocked-in ring — rotating green arc */}
+        {/* Clocked-in ring — breathing green pulse */}
         {clockState === "clocked-in" && (
-          <>
-            <div
-              className="absolute inset-0 rounded-full animate-spin-slow"
-              style={{ background: "conic-gradient(#10B981 0deg, transparent 110deg, transparent 360deg)" }}
-            />
-            <div className="absolute rounded-full bg-white" style={{ inset: "5px" }} />
-          </>
+          <div className="absolute inset-0 rounded-full border-4 border-green-500 animate-pulse-ring-green" />
         )}
 
         {/* Clocked-out ring — static gray */}
@@ -295,8 +292,8 @@ export default function ClockPage() {
           )}
           {clockState === "clocked-in" && (
             <>
-              <span className="text-3xl font-bold tabular-nums text-green-600">{formatElapsed(elapsed)}</span>
-              <span className="text-xs text-gray-400">שעות:דקות:שניות</span>
+              <span className="text-3xl font-bold tabular-nums text-green-600" dir="ltr">{formatElapsed(elapsed)}</span>
+              <span className="text-xs text-gray-400" dir="ltr">שעות:דקות</span>
             </>
           )}
           {clockState === "clocked-out" && todayClockIn && todayClockOut && (
@@ -463,6 +460,7 @@ export default function ClockPage() {
         onSave={handleSave}
         onDelete={handleDelete}
       />
+      </div>
     </div>
   );
 }

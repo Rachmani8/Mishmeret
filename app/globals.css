@@ -53,3 +53,12 @@ body {
 .animate-spin-slow {
   animation: spin-slow 3s linear infinite;
 }
+
+@keyframes pulse-ring-green {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.55); }
+  50%       { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0.12); }
+}
+
+.animate-pulse-ring-green {
+  animation: pulse-ring-green 2.5s ease-in-out infinite;
+}
