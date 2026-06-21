@@ -35,3 +35,21 @@ body {
   background: #d1d5db;
   border-radius: 2px;
 }
+
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.55); }
+  50%       { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0.12); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2.5s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
