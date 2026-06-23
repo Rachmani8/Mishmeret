@@ -128,7 +128,7 @@ export default function JobWizard({ open, initialColor, onClose }: Props) {
 
       {/* Nav buttons — always visible */}
       <div
-        className="flex gap-2.5 px-5 pt-2"
+        className="flex-none flex gap-2.5 px-5 pt-2"
         style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
       >
         <button
