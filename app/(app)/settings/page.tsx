@@ -218,10 +218,12 @@ export default function SettingsPage() {
   const [syncStatus, setSyncStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [shabbatOpen, setShabbatOpen] = useState(false);
   const [hasSynced, setHasSynced] = useState(true);
-  const [infoOpen, setInfoOpen] = useState(() =>
-    typeof window !== "undefined" ? localStorage.getItem("settingsInfoDismissed") !== "1" : true
-  );
+  const [infoOpen, setInfoOpen] = useState(true);
   const [wizardOpen, setWizardOpen] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("settingsInfoDismissed") === "1") setInfoOpen(false);
+  }, []);
 
   useEffect(() => {
     db.jobs.toArray().then(async (j) => {
