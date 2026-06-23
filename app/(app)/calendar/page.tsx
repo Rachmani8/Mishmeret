@@ -122,18 +122,18 @@ export default function CalendarPage() {
     const isWorkedDay = isPast && workedShifts.length > 0;
     const isSat = date.getDay() === 6;
     const isFri = date.getDay() === 5;
-    const isHoliday = !!holidays[key];
+    const holidayName: string | undefined = holidays[key];
+    const isHoliday = !!holidayName;
     const nextDay = new Date(date);
     nextDay.setDate(nextDay.getDate() + 1);
-    const erevName = !isSat && !isHoliday && holidays[formatDate(nextDay)] ? true : false;
+    const erevHolidayName: string | undefined =
+      !isSat && !isHoliday ? holidays[formatDate(nextDay)] : undefined;
 
     let bg = "bg-[#162038] hover:bg-[#1C2B4A]";
     let border = "border-white/[0.06] hover:border-white/[0.12]";
 
     if (todayDay) { bg = "bg-[#162C4A]"; border = "border-[#3B7FF5]"; }
-    else if (isWorkedDay) { bg = "bg-green-900/20"; border = "border-green-700/40"; }
-    else if (isHoliday || erevName) { bg = "bg-[#1D1830] hover:bg-[#231B40]"; border = "border-white/[0.06]"; }
-    else if (isSat || isFri) { bg = "bg-[#1E1810] hover:bg-[#251F12]"; border = "border-white/[0.06]"; }
+    else if (isWorkedDay) { bg = "bg-[#1a2540] hover:bg-[#1C2B4A]"; border = "border-white/[0.10]"; }
 
     const dayNumColor = todayDay
       ? "text-[#3B7FF5]"
@@ -141,7 +141,7 @@ export default function CalendarPage() {
       ? "text-[#4A6080]"
       : "text-[#E8EEFF]";
 
-    const dayAbbrColor = (isHoliday || erevName)
+    const dayAbbrColor = (isHoliday || erevHolidayName)
       ? "text-purple-400"
       : isSat
       ? "text-orange-400"
@@ -157,6 +157,16 @@ export default function CalendarPage() {
         <span className={`text-xs font-semibold ${dayAbbrColor}`}>
           {DAY_ABBR_HE[date.getDay()]}
         </span>
+        {holidayName && (
+          <span className="text-[9px] leading-tight text-purple-400/80 text-center w-full truncate px-0.5">
+            {holidayName}
+          </span>
+        )}
+        {erevHolidayName && (
+          <span className="text-[9px] leading-tight text-purple-400/80 text-center w-full truncate px-0.5">
+            ערב {erevHolidayName}
+          </span>
+        )}
         <span className={`font-bold ${compact ? "text-sm" : "text-base"} ${dayNumColor}`}>
           {date.getDate()}
         </span>
@@ -276,8 +286,8 @@ export default function CalendarPage() {
               <div>
                 <p className="text-sm font-semibold text-[#E8EEFF] mb-1">ימים מיוחדים</p>
                 <div className="text-sm text-[#6B8FAA] space-y-0.5">
-                  <p><span className="text-orange-400">■</span> שבת — בצבע חום/כתום</p>
-                  <p><span className="text-purple-400">■</span> חג — בצבע סגול</p>
+                  <p><span className="text-orange-400">ש׳</span> שבת — האות בכתום</p>
+                  <p><span className="text-purple-400">א׳</span> חג / ערב חג — האות בסגול</p>
                 </div>
               </div>
             </div>
