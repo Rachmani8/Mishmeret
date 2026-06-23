@@ -39,8 +39,6 @@ export default function JobWizard({ open, initialColor, onClose }: Props) {
     onClose(job);
   };
 
-  if (!open) return null;
-
   const progressPct = step === 0 ? 0 : step >= 7 ? 100 : Math.round((step / STEP_COUNT) * 100);
 
   const chips: { icon: string; val: string }[] = [];
@@ -67,6 +65,7 @@ export default function JobWizard({ open, initialColor, onClose }: Props) {
       className={`fixed inset-0 z-50 flex flex-col bg-[#0d1220] transition-transform duration-300 ${
         open ? "translate-y-0" : "translate-y-full"
       }`}
+      aria-hidden={!open}
       dir="rtl"
     >
       {/* Progress bar — hidden on welcome and summary */}
@@ -274,6 +273,12 @@ function ToggleRow({
   );
 }
 
+// ── Shared input style constants ─────────────────────────────────
+
+const INPUT_CLS_BASE =
+  "text-center border rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#3B7FF5]/50 bg-[#0C1221] text-[#E8EEFF]";
+const INPUT_STYLE = { borderColor: "rgba(255,255,255,0.15)" };
+
 // ── Steps ────────────────────────────────────────────────────────
 
 function StepWelcome() {
@@ -411,10 +416,6 @@ function StepOvertime({
   onExpand: () => void;
   onChange: <K extends keyof Job>(key: K, value: Job[K]) => void;
 }) {
-  const inputCls =
-    "w-24 text-center border rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#3B7FF5]/50 bg-[#0C1221] text-[#E8EEFF]";
-  const inputStyle = { borderColor: "rgba(255,255,255,0.15)" };
-
   return (
     <>
       <StepEyebrow>שעות עבודה</StepEyebrow>
@@ -462,8 +463,8 @@ function StepOvertime({
               min={0}
               onChange={(e) => onChange(key, parseFloat(e.target.value) || 0)}
               onFocus={(e) => e.target.select()}
-              className={inputCls}
-              style={inputStyle}
+              className={`w-24 ${INPUT_CLS_BASE}`}
+              style={INPUT_STYLE}
             />
           </div>
         ))
@@ -553,8 +554,8 @@ function StepCommute({
             max={1000}
             onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
             onFocus={(e) => e.target.select()}
-            className="w-24 text-center border rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#3B7FF5]/50 bg-[#0C1221] text-[#E8EEFF]"
-            style={{ borderColor: "rgba(255,255,255,0.15)" }}
+            className={`w-24 ${INPUT_CLS_BASE}`}
+            style={INPUT_STYLE}
           />
         </div>
       )}
@@ -571,9 +572,6 @@ function StepPension({
   onEmployer: (v: number) => void; onSeverance: (v: number) => void;
 }) {
   const total = employee + employer + severance;
-  const inputCls =
-    "w-20 text-center border rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#3B7FF5]/50 bg-[#0C1221] text-[#E8EEFF]";
-  const inputStyle = { borderColor: "rgba(255,255,255,0.15)" };
   const rowBorder = { borderColor: "rgba(255,255,255,0.08)" };
 
   return (
@@ -616,8 +614,8 @@ function StepPension({
                 max={50}
                 onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
                 onFocus={(e) => e.target.select()}
-                className={inputCls}
-                style={inputStyle}
+                className={`w-20 ${INPUT_CLS_BASE}`}
+                style={INPUT_STYLE}
               />
             </div>
           ))}
@@ -627,36 +625,34 @@ function StepPension({
   );
 }
 
-function StepSummary({
-  draft, onGoTo, onSave,
-}: {
-  draft: Job; onGoTo: (s: number) => void; onSave: () => void;
-}) {
-  const rowBorder = { borderColor: "rgba(255,255,255,0.08)" };
+const SUMMARY_ROW_BORDER = { borderColor: "rgba(255,255,255,0.08)" };
 
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+function SummarySection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
     <div
       className="rounded-2xl overflow-hidden mb-3"
       style={{ background: "#1a2540", border: "1px solid #1a2038" }}
     >
       <div
         className="px-4 py-2 text-[10px] uppercase tracking-widest text-[#3a4a70] border-b"
-        style={rowBorder}
+        style={SUMMARY_ROW_BORDER}
       >
         {title}
       </div>
       {children}
     </div>
   );
+}
 
-  const Row = ({
-    label, value, onEdit,
-  }: {
-    label: string; value: string; onEdit?: () => void;
-  }) => (
+function SummaryRow({
+  label, value, onEdit,
+}: {
+  label: string; value: string; onEdit?: () => void;
+}) {
+  return (
     <div
       className="flex justify-between items-center px-4 py-2.5 border-b last:border-0"
-      style={rowBorder}
+      style={SUMMARY_ROW_BORDER}
     >
       <span className="text-[12px] text-[#8090b8]">{label}</span>
       <div className="flex items-center gap-2">
@@ -672,7 +668,13 @@ function StepSummary({
       </div>
     </div>
   );
+}
 
+function StepSummary({
+  draft, onGoTo, onSave,
+}: {
+  draft: Job; onGoTo: (s: number) => void; onSave: () => void;
+}) {
   const pensionTotal = (
     draft.pensionEmployeePercent +
     draft.pensionEmployerPercent +
@@ -687,32 +689,32 @@ function StepSummary({
         <p className="text-[12px] text-[#3a4a70]">בדוק/י ואשר/י את הגדרות המשרה</p>
       </div>
 
-      <Section title="בסיס">
-        <Row label="שם משרה" value={draft.name || "משרה ראשית"} onEdit={() => onGoTo(1)} />
-        <Row label="שכר שעתי" value={`${draft.baseHourlyRate} ₪/שע׳`} onEdit={() => onGoTo(2)} />
-      </Section>
+      <SummarySection title="בסיס">
+        <SummaryRow label="שם משרה" value={draft.name || "משרה ראשית"} onEdit={() => onGoTo(1)} />
+        <SummaryRow label="שכר שעתי" value={`${draft.baseHourlyRate} ₪/שע׳`} onEdit={() => onGoTo(2)} />
+      </SummarySection>
 
-      <Section title="שעות עבודה">
-        <Row label="נורמת יומית" value={`${draft.dailyNormHours} שע׳`} />
-        <Row label="שישי/שבת/חג" value="1.5×" />
-        <Row label="שע׳ נוספות" value="1.25× / 1.5×" />
-      </Section>
+      <SummarySection title="שעות עבודה">
+        <SummaryRow label="נורמת יומית" value={`${draft.dailyNormHours} שע׳`} />
+        <SummaryRow label="שישי/שבת/חג" value={`${draft.weekendMultiplier}×`} />
+        <SummaryRow label="שע׳ נוספות" value={`${draft.overtime1Multiplier}× / ${draft.overtime2Multiplier}×`} />
+      </SummarySection>
 
-      <Section title="תוספות ומס">
-        <Row
+      <SummarySection title="תוספות ומס">
+        <SummaryRow
           label="נקודות זיכוי"
           value={String(draft.taxCreditPoints)}
           onEdit={() => onGoTo(4)}
         />
-        <Row
+        <SummaryRow
           label="נסיעות"
           value={draft.commuteEnabled ? `${draft.commuteDaily} ₪/יום ✓` : "ללא"}
         />
-        <Row
+        <SummaryRow
           label="פנסיה סה״כ"
           value={draft.pensionEnabled ? `${pensionTotal}% ✓` : "ללא"}
         />
-      </Section>
+      </SummarySection>
 
       <div className="pb-8">
         <button
