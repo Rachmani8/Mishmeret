@@ -41,24 +41,8 @@ export default function JobWizard({ open, initialColor, onClose }: Props) {
 
   const progressPct = step === 0 ? 0 : step >= 7 ? 100 : Math.round((step / STEP_COUNT) * 100);
 
-  const chips: { icon: string; val: string }[] = [];
-  if (step >= 2 && draft.name) chips.push({ icon: "📋", val: draft.name });
-  if (step >= 3) chips.push({ icon: "💰", val: `${draft.baseHourlyRate} ₪` });
-  if (step >= 4) chips.push({ icon: "⏱", val: "חוק" });
-  if (step >= 5) chips.push({ icon: "🎯", val: String(draft.taxCreditPoints) });
-  if (step >= 6) chips.push({ icon: "🚌", val: draft.commuteEnabled ? `${draft.commuteDaily} ₪` : "ללא" });
-
-  const nextLabel =
-    step === 0 ? "בואו נתחיל ←" :
-    step === 6 ? "סיום → סיכום 🎉" :
-    "המשך →";
-
-  const nextClass =
-    step === 6
-      ? "bg-gradient-to-l from-[#1a8a50] to-[#2ac870]"
-      : step === 0
-      ? "bg-gradient-to-l from-[#1a3a70] to-[#2a5bd4]"
-      : "bg-gradient-to-l from-[#2a5bd4] to-[#5b9af5]";
+  const nextLabel = step === 0 ? "← בואו נתחיל" : step === 6 ? "← סיכום" : "← המשך";
+  const nextClass = "bg-gradient-to-l from-[#2a5bd4] to-[#5b9af5]";
 
   return (
     <div
@@ -138,73 +122,38 @@ export default function JobWizard({ open, initialColor, onClose }: Props) {
           />
         )}
         {step === 7 && (
-          <StepSummary draft={draft} onGoTo={goTo} onSave={handleSave} />
+          <StepSummary draft={draft} onGoTo={goTo} />
         )}
       </div>
 
-      {/* Already-set chips */}
-      {chips.length > 0 && step < 7 && (
-        <div className="flex flex-wrap gap-1.5 px-5 py-2">
-          {chips.map((c, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px]"
-              style={{
-                background: "rgba(59,111,212,0.08)",
-                border: "1px solid rgba(59,111,212,0.15)",
-                color: "#4a6090",
-              }}
-            >
-              {c.icon}{" "}
-              <span style={{ color: "#5b7ab0", fontWeight: 600 }}>{c.val}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Nav buttons — hidden on summary (summary has its own save button) */}
-      {step < 7 && (
-        <div className="flex gap-2.5 px-5 pb-8 pt-2">
-          {step > 0 && (
-            <button
-              onClick={back}
-              className="w-12 h-12 flex-none flex items-center justify-center rounded-2xl text-[#8090b8] text-lg"
-              style={{ background: "#1a2540", border: "1.5px solid #243050" }}
-            >
-              ←
-            </button>
-          )}
+      {/* Nav buttons — always visible */}
+      <div
+        className="flex gap-2.5 px-5 pt-2"
+        style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+      >
+        <button
+          onClick={step === 0 ? () => onClose() : back}
+          className="w-12 h-12 flex-none flex items-center justify-center rounded-2xl text-[#8090b8] text-lg"
+          style={{ background: "#1a2540", border: "1.5px solid #243050" }}
+        >
+          →
+        </button>
+        {step < 7 ? (
           <button
             onClick={next}
             className={`flex-1 h-12 rounded-2xl text-white text-[15px] font-bold flex items-center justify-center gap-2 ${nextClass}`}
           >
             {nextLabel}
           </button>
-        </div>
-      )}
-
-      {/* Dot pagination — hidden on summary */}
-      {step < 7 && (
-        <div className="flex justify-center gap-1.5 pb-4">
-          {Array.from({ length: 7 }, (_, i) => {
-            const state = i < step ? "done" : i === step ? "active" : "future";
-            return (
-              <div
-                key={i}
-                className="h-1.5 rounded-full transition-all duration-300"
-                style={{
-                  width: state === "active" ? 20 : 6,
-                  background:
-                    state === "done" ? "#3b6fd4" :
-                    state === "active" ? "#5b9af5" :
-                    "#243050",
-                  opacity: state === "done" ? 0.4 : 1,
-                }}
-              />
-            );
-          })}
-        </div>
-      )}
+        ) : (
+          <button
+            onClick={handleSave}
+            className="flex-1 h-12 rounded-2xl text-white text-[15px] font-bold flex items-center justify-center gap-2 bg-gradient-to-l from-[#1a8a50] to-[#2ac870]"
+          >
+            ✓ שמור/י משרה
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -351,25 +300,31 @@ function StepWage({ value, onChange }: { value: number; onChange: (v: number) =>
         לשנות אחר כך.
       </TipBox>
       <div
-        className="flex items-center justify-between px-5 py-4 rounded-2xl mb-3"
+        className="flex items-center gap-3 px-4 py-4 rounded-2xl mb-3"
         style={{ background: "#1a2540", border: "1.5px solid #243050" }}
       >
         <button
-          onClick={() => adj(-0.5)}
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-xl text-[#8090b8]"
+          onClick={() => adj(-1)}
+          className="w-11 h-11 flex-none rounded-xl flex items-center justify-center text-2xl text-[#8090b8]"
           style={{ background: "#0d1220", border: "1px solid #243050" }}
         >
           −
         </button>
-        <div className="text-center">
-          <span className="text-[32px] font-extrabold text-[#dde4f8] tabular-nums">
-            {value}
-          </span>
-          <span className="text-[13px] text-[#8090b8] mr-1">₪ לשעה</span>
+        <div className="flex-1 flex items-center justify-center gap-1.5">
+          <input
+            type="number"
+            value={value}
+            min={0}
+            step={1}
+            onChange={(e) => onChange(Math.max(0, parseFloat(e.target.value) || 0))}
+            onFocus={(e) => e.target.select()}
+            className="w-24 text-center text-[32px] font-extrabold text-[#dde4f8] bg-transparent focus:outline-none tabular-nums"
+          />
+          <span className="text-[13px] text-[#8090b8]">₪/שע׳</span>
         </div>
         <button
-          onClick={() => adj(0.5)}
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-xl text-[#5b9af5]"
+          onClick={() => adj(1)}
+          className="w-11 h-11 flex-none rounded-xl flex items-center justify-center text-2xl text-[#5b9af5]"
           style={{ background: "#0d1220", border: "1.5px solid #3b6fd4" }}
         >
           +
@@ -671,9 +626,9 @@ function SummaryRow({
 }
 
 function StepSummary({
-  draft, onGoTo, onSave,
+  draft, onGoTo,
 }: {
-  draft: Job; onGoTo: (s: number) => void; onSave: () => void;
+  draft: Job; onGoTo: (s: number) => void;
 }) {
   const pensionTotal = (
     draft.pensionEmployeePercent +
@@ -716,16 +671,9 @@ function StepSummary({
         />
       </SummarySection>
 
-      <div className="pb-8">
-        <button
-          onClick={onSave}
-          className="w-full h-14 rounded-2xl text-white text-[16px] font-extrabold flex items-center justify-center gap-2"
-          style={{ background: "linear-gradient(135deg, #1a8a50, #2ac870)" }}
-        >
-          ✓ שמור/י משרה
-        </button>
-        <p className="text-center text-[11px] text-[#3a4a70] mt-2">
-          תישאר/י בדף ההגדרות
+      <div className="pb-4">
+        <p className="text-center text-[11px] text-[#3a4a70]">
+          לחץ/י שמור/י למטה לסיום
         </p>
       </div>
     </>
