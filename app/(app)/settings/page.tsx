@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { db, defaultJob } from "@/lib/db";
 import type { Job } from "@/lib/db";
 import { ISRAELI_CITIES, getAppSettings, saveAppSettings, fetchAndCache, fetchHolidayDatesAndCache } from "@/lib/hebcal";
+import JobWizard from "./JobWizard";
 
 type Field = {
   key: keyof Job;
@@ -220,6 +221,7 @@ export default function SettingsPage() {
   const [infoOpen, setInfoOpen] = useState(() =>
     typeof window !== "undefined" ? localStorage.getItem("settingsInfoDismissed") !== "1" : true
   );
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   useEffect(() => {
     db.jobs.toArray().then(async (j) => {
@@ -257,13 +259,8 @@ export default function SettingsPage() {
     }
   };
 
-  const addJob = async () => {
-    const color = JOB_COLORS[jobs.length % JOB_COLORS.length];
-    const job = defaultJob({ name: `משרה ${jobs.length + 1}`, color });
-    await db.jobs.add(job);
-    setJobs((prev) => [...prev, job]);
-    setExpandedId(job.id);
-  };
+  const wizardColor = JOB_COLORS[jobs.length % JOB_COLORS.length];
+  const openWizard = () => setWizardOpen(true);
 
   const handleSave = (updated: Job) => {
     setJobs((prev) => prev.map((j) => (j.id === updated.id ? updated : j)));
@@ -318,7 +315,7 @@ export default function SettingsPage() {
 
         {/* Add job button */}
         <button
-          onClick={addJob}
+          onClick={openWizard}
           className="w-full py-3.5 border-2 border-dashed rounded-2xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 text-[#3E5672] hover:text-[#6B8FAA]"
           style={{ borderColor: "rgba(255,255,255,0.12)", background: "transparent" }}
         >
@@ -410,6 +407,17 @@ export default function SettingsPage() {
           </div>
         </>
       )}
+
+      <JobWizard
+        open={wizardOpen}
+        initialColor={wizardColor}
+        onClose={(job) => {
+          if (job) {
+            setJobs((prev) => [...prev, job]);
+          }
+          setWizardOpen(false);
+        }}
+      />
     </div>
   );
 }
