@@ -285,7 +285,7 @@ export default function SettingsPage() {
           <h1 className="text-xl font-bold text-[#E8EEFF]">הגדרות משרה</h1>
           <button
             onClick={() => { setInfoOpen(true); localStorage.removeItem("settingsInfoDismissed"); }}
-            className="w-7 h-7 rounded-full bg-[#162038] text-[#6B8FAA] hover:text-[#E8EEFF] flex items-center justify-center text-sm font-bold transition-colors"
+            className="w-7 h-7 rounded-full bg-[#162038] text-[#5b9af5] border border-[#3B7FF5]/40 hover:border-[#3B7FF5]/80 hover:text-white flex items-center justify-center text-sm font-bold transition-all"
           >
             ?
           </button>

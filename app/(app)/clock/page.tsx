@@ -64,6 +64,7 @@ export default function ClockPage() {
   const [elapsed, setElapsed] = useState(0);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [drawerShiftId, setDrawerShiftId] = useState<string | null>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   useEffect(() => {
     db.jobs.toArray().then((j) => {
@@ -232,7 +233,15 @@ export default function ClockPage() {
     <div className="flex flex-col min-h-[calc(100vh-64px)]" dir="rtl">
       {/* Header */}
       <div className="sticky top-0 z-10 px-4 pt-4 pb-3 border-b" style={{ background: "#0C1221", borderColor: "rgba(255,255,255,0.07)" }}>
-        <h1 className="text-xl font-bold text-[#E8EEFF]">שעון</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-[#E8EEFF]">שעון</h1>
+          <button
+            onClick={() => setInfoOpen(true)}
+            className="w-7 h-7 rounded-full bg-[#162038] text-[#5b9af5] border border-[#3B7FF5]/40 hover:border-[#3B7FF5]/80 hover:text-white flex items-center justify-center text-sm font-bold transition-all"
+          >
+            ?
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col items-center justify-center flex-1 px-6 py-8">
@@ -446,6 +455,36 @@ export default function ClockPage() {
           onDelete={handleDelete}
         />
       </div>
+
+      {/* Info modal */}
+      {infoOpen && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setInfoOpen(false)} />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-[#162038] border rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+            <h2 className="text-base font-bold text-[#E8EEFF] mb-4">שעון נוכחות — איך עובד?</h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">התחלת משמרת</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">לחץ/י "התחל משמרת" — שעת הכניסה נרשמת אוטומטית. הטיימר רץ כל עוד המשמרת פעילה.</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">סיום וווידוא</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">לחץ/י "סיום משמרת" ואז "ווידוא יום" כדי לאשר את השעות ולשמור את המשמרת ביומן.</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">משמרת נוספת</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">אחרי ווידוא אפשר לפתוח משמרת נוספת באותו יום — למשל, אם יש הפסקה ארוכה ביניהן.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setInfoOpen(false)}
+              className="mt-6 w-full py-2.5 bg-[#3B7FF5] hover:bg-[#2B6EE0] text-white text-sm font-semibold rounded-xl transition-colors"
+            >
+              הבנתי
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
