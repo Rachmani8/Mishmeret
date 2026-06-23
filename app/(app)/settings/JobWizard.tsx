@@ -46,7 +46,7 @@ export default function JobWizard({ open, initialColor, onClose }: Props) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col bg-[#0d1220] transition-transform duration-300 ${
+      className={`fixed inset-0 z-[100] flex flex-col bg-[#0d1220] transition-transform duration-300 ${
         open ? "translate-y-0" : "translate-y-full"
       }`}
       aria-hidden={!open}
