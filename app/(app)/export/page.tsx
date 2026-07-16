@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { db } from "@/lib/db";
 import type { Job } from "@/lib/db";
 import { useShabbatTimes } from "@/lib/useShabbatTimes";
@@ -167,11 +168,17 @@ export default function ExportPage() {
     <div className="flex flex-col min-h-full" dir="rtl">
       {/* Header */}
       <div className="px-4 pt-4 pb-3 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
-        <div className="flex items-center justify-between">
+        <div className="relative flex items-center justify-center">
+          <Link href="/settings" className="absolute left-0 w-8 h-8 rounded-full bg-[#162038] border border-white/10 hover:border-white/25 flex items-center justify-center text-[#6B8FAA] hover:text-[#E8EEFF] transition-all">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-5 h-5">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+            </svg>
+          </Link>
           <h1 className="text-xl font-bold text-[#E8EEFF]">ייצוא לאקסל</h1>
           <button
             onClick={() => setInfoOpen(true)}
-            className="w-7 h-7 rounded-full bg-[#162038] text-[#5b9af5] border border-[#3B7FF5]/40 hover:border-[#3B7FF5]/80 hover:text-white flex items-center justify-center text-sm font-bold transition-all"
+            className="absolute right-0 w-7 h-7 rounded-full bg-[#FF6B2C]/15 text-[#FF6B2C] border border-[#FF6B2C]/50 hover:border-[#FF6B2C] hover:bg-[#FF6B2C]/25 flex items-center justify-center text-sm font-bold transition-all"
           >
             ?
           </button>

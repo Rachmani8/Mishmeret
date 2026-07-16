@@ -218,11 +218,11 @@ export default function SettingsPage() {
   const [syncStatus, setSyncStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [shabbatOpen, setShabbatOpen] = useState(false);
   const [hasSynced, setHasSynced] = useState(true);
-  const [infoOpen, setInfoOpen] = useState(true);
+  const [infoOpen, setInfoOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem("settingsInfoDismissed") === "1") setInfoOpen(false);
+    if (localStorage.getItem("settingsInfoDismissed") !== "1") setInfoOpen(true);
   }, []);
 
   useEffect(() => {
@@ -281,11 +281,12 @@ export default function SettingsPage() {
     <div className="flex flex-col min-h-full" dir="rtl">
       {/* Header */}
       <div className="px-4 pt-4 pb-3 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
-        <div className="flex items-center justify-between">
+        <div className="relative flex items-center justify-center">
+          <div className="w-8" />
           <h1 className="text-xl font-bold text-[#E8EEFF]">הגדרות משרה</h1>
           <button
             onClick={() => { setInfoOpen(true); localStorage.removeItem("settingsInfoDismissed"); }}
-            className="w-7 h-7 rounded-full bg-[#162038] text-[#5b9af5] border border-[#3B7FF5]/40 hover:border-[#3B7FF5]/80 hover:text-white flex items-center justify-center text-sm font-bold transition-all"
+            className="absolute right-0 w-7 h-7 rounded-full bg-[#FF6B2C]/15 text-[#FF6B2C] border border-[#FF6B2C]/50 hover:border-[#FF6B2C] hover:bg-[#FF6B2C]/25 flex items-center justify-center text-sm font-bold transition-all"
           >
             ?
           </button>
