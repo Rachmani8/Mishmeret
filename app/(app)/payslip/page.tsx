@@ -16,21 +16,19 @@ function ReadOnlyRow({
   label,
   amount,
   isNegative = false,
-  bold = false,
   hours,
 }: {
   label: string;
   amount: number;
   isNegative?: boolean;
-  bold?: boolean;
   hours?: number;
 }) {
   return (
     <div
-      className={`flex items-center gap-2 py-2.5 ${bold ? "border-t mt-1 pt-3" : "border-b last:border-0"}`}
+      className="flex items-center gap-2 py-2.5 border-b last:border-0"
       style={{ borderColor: "rgba(255,255,255,0.08)" }}
     >
-      <span className={`flex-1 text-sm ${bold ? "font-semibold text-[#E8EEFF]" : "text-[#6B8FAA]"}`}>
+      <span className="flex-1 text-sm text-[#6B8FAA]">
         {label}
       </span>
       {hours !== undefined && (
@@ -41,7 +39,7 @@ function ReadOnlyRow({
       <span
         dir="ltr"
         className={`text-sm font-medium w-24 text-left ${
-          isNegative ? "text-red-400" : bold ? "text-[#3B7FF5] font-bold" : "text-[#E8EEFF]"
+          isNegative ? "text-red-400" : "text-[#E8EEFF]"
         }`}
       >
         {isNegative ? "-" : ""}{formatCurrency(amount).replace("₪", "")}
@@ -215,12 +213,6 @@ export default function PayslipPage() {
             <ReadOnlyRow label="ביטוח לאומי" amount={payslip.nationalInsurance} isNegative />
             <ReadOnlyRow label="ביטוח בריאות" amount={payslip.healthInsurance} isNegative />
             <ReadOnlyRow label="מס הכנסה" amount={payslip.incomeTax} isNegative />
-          </div>
-
-          {/* Net */}
-          <div className="bg-green-600 rounded-2xl px-4 py-4 flex items-center justify-between">
-            <span className="text-white font-semibold text-base">נטו לתשלום</span>
-            <span className="text-white font-bold text-xl">{formatCurrency(payslip.netPay)}</span>
           </div>
 
           {/* Tips */}
