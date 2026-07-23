@@ -24,7 +24,8 @@ function timeToSeconds(hhmm: string): number {
 function formatElapsed(seconds: number): string {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  const s = seconds % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
 function calcDuration(clockIn: string, clockOut: string): string {
@@ -58,6 +59,11 @@ export default function ClockPage() {
   const [clockShiftId, setClockShiftId] = useState<string | null>(
     () => typeof window !== "undefined" ? localStorage.getItem(`clockShiftId_${todayStr}`) : null
   );
+  const [clockInTimestamp, setClockInTimestamp] = useState<number | null>(
+    () => typeof window !== "undefined"
+      ? Number(localStorage.getItem(`clockInTimestamp_${todayStr}`)) || null
+      : null
+  );
   const [firstClockShiftId, setFirstClockShiftId] = useState<string | null>(
     () => typeof window !== "undefined" ? localStorage.getItem(`firstClockShiftId_${todayStr}`) : null
   );
@@ -89,17 +95,14 @@ export default function ClockPage() {
   }, []);
 
   useEffect(() => {
-    if (clockState !== "clocked-in" || !todayClockIn) return;
-    const start = timeToSeconds(todayClockIn);
+    if (clockState !== "clocked-in" || !clockInTimestamp) return;
     const tick = () => {
-      const n = new Date();
-      const nowSec = n.getHours() * 3600 + n.getMinutes() * 60 + n.getSeconds();
-      setElapsed(Math.max(0, nowSec - start));
+      setElapsed(Math.max(0, Math.floor((Date.now() - clockInTimestamp) / 1000)));
     };
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [clockState, todayClockIn]);
+  }, [clockState, clockInTimestamp]);
 
   useEffect(() => {
     if (!shiftsLoadedRef.current) return;
@@ -111,6 +114,7 @@ export default function ClockPage() {
       setClockState("idle");
       setClockShiftId(null);
       setFirstClockShiftId(null);
+      setClockInTimestamp(null);
       setTodayClockIn("");
       setTodayClockOut("");
       localStorage.removeItem(`clockState_${todayStr}`);
@@ -118,6 +122,7 @@ export default function ClockPage() {
       localStorage.removeItem(`clockOut_${todayStr}`);
       localStorage.removeItem(`clockShiftId_${todayStr}`);
       localStorage.removeItem(`firstClockShiftId_${todayStr}`);
+      localStorage.removeItem(`clockInTimestamp_${todayStr}`);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todayShifts, todayStr]);
@@ -141,10 +146,13 @@ export default function ClockPage() {
     await db.shifts.put(shift);
     setClockShiftId(shift.id);
     localStorage.setItem(`clockShiftId_${todayStr}`, shift.id);
+    const ts = Date.now();
     setTodayClockIn(time);
+    setClockInTimestamp(ts);
     setClockState("clocked-in");
     localStorage.setItem(`clockState_${todayStr}`, "clocked-in");
     localStorage.setItem(`clockIn_${todayStr}`, time);
+    localStorage.setItem(`clockInTimestamp_${todayStr}`, String(ts));
     await loadTodayShifts();
   };
 
@@ -201,6 +209,7 @@ export default function ClockPage() {
       setClockState("idle");
       setClockShiftId(null);
       setFirstClockShiftId(null);
+      setClockInTimestamp(null);
       setTodayClockIn("");
       setTodayClockOut("");
       localStorage.removeItem(`clockState_${todayStr}`);
@@ -208,6 +217,7 @@ export default function ClockPage() {
       localStorage.removeItem(`clockOut_${todayStr}`);
       localStorage.removeItem(`clockShiftId_${todayStr}`);
       localStorage.removeItem(`firstClockShiftId_${todayStr}`);
+      localStorage.removeItem(`clockInTimestamp_${todayStr}`);
     }
   }, [todayShifts, todayStr, clockShiftId, firstClockShiftId]);
 
@@ -299,7 +309,6 @@ export default function ClockPage() {
             {clockState === "clocked-in" && (
               <>
                 <span className="text-3xl font-bold tabular-nums text-green-400" dir="ltr">{formatElapsed(elapsed)}</span>
-                <span className="text-xs text-[#6B8FAA]" dir="ltr">שעות:דקות</span>
               </>
             )}
             {clockState === "clocked-out" && todayClockIn && todayClockOut && (
@@ -307,7 +316,6 @@ export default function ClockPage() {
                 <span className="text-3xl font-bold tabular-nums text-[#E8EEFF]">
                   {calcDuration(todayClockIn, todayClockOut)}
                 </span>
-                <span className="text-xs text-[#6B8FAA]">שעות:דקות</span>
               </>
             )}
             {clockState === "reviewed" && (
@@ -349,7 +357,7 @@ export default function ClockPage() {
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
-              התחל משמרת
+              כניסה למשמרת
             </button>
           )}
 
@@ -472,7 +480,7 @@ export default function ClockPage() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm font-semibold text-[#E8EEFF] mb-1">כניסה למשמרת</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">לחץ/י "התחל משמרת" בהגיעך. הטיימר רץ ושעת הכניסה נשמרת.</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">לחץ/י "כניסה למשמרת" בהגיעך. הטיימר רץ ושעת הכניסה נשמרת.</p>
               </div>
               <div>
                 <p className="text-sm font-semibold text-[#E8EEFF] mb-1">יציאה מהמשמרת</p>

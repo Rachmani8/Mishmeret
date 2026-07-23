@@ -139,8 +139,6 @@ export default function CalendarPage() {
 
     const dayNumColor = todayDay
       ? "text-[#3B7FF5]"
-      : isPast
-      ? "text-[#4A6080]"
       : "text-[#E8EEFF]";
 
     const dayAbbrColor = (isHoliday || erevHolidayName)
@@ -149,7 +147,7 @@ export default function CalendarPage() {
       ? "text-orange-400"
       : todayDay
       ? "text-[#3B7FF5]"
-      : "text-[#3E5672]";
+      : "text-[#E8EEFF]";
 
     return (
       <button
@@ -291,7 +289,7 @@ export default function CalendarPage() {
               ? "text-[#FF6B2C]"
               : isHoliday || isErevHoliday
               ? "text-purple-400"
-              : "text-[#6B8FAA]";
+              : "text-[#E8EEFF]";
 
             const cardClass = isTodayRow
               ? "border-[#3B7FF5] border-[1.5px] bg-[#1a2540]"
@@ -343,7 +341,7 @@ export default function CalendarPage() {
                               <span className="text-xs font-semibold" style={{ color: jobColor }}>
                                 {jobNameMap[shift.jobId]}
                               </span>
-                              <span className="text-[12px] font-semibold text-[#E8EEFF]">
+                              <span className="text-[12px] font-semibold text-[#E8EEFF]" dir="ltr">
                                 {shift.clockIn} — {shift.clockOut}
                               </span>
                               <div className="flex gap-2 text-[10px] text-[#6B8FAA]">

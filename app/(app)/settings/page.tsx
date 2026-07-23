@@ -291,7 +291,7 @@ export default function SettingsPage() {
             ?
           </button>
         </div>
-        <p className="text-sm text-[#6B8FAA] mt-0.5">הגדר/י את פרטי המשרה לחישוב שכר מדויק</p>
+        <p className="text-sm text-[#6B8FAA] mt-0.5">הגדירו את פרטי המשרה לחישוב שכר מדויק</p>
       </div>
 
       <div className="p-4 space-y-4">
@@ -325,7 +325,7 @@ export default function SettingsPage() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
             <path d="M12 5v14M5 12h14" />
           </svg>
-          הוסף/י משרה
+          הוסיפו משרה
         </button>
 
         {/* Shabbat sync */}
@@ -338,7 +338,7 @@ export default function SettingsPage() {
             onMouseLeave={(e) => (e.currentTarget.style.background = "#1C2B4A")}
           >
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-[#3B7FF5] underline">הגדר/י זמני כניסת שבת וחגים</span>
+              <span className="text-sm font-bold text-[#3B7FF5] underline">הגדירו זמני כניסת שבת וחגים</span>
               {hasSynced
                 ? <span className="text-xs text-green-400 font-medium">✓ סונכרן</span>
                 : <span className="text-xs text-amber-400 font-medium">! לא סונכרן</span>
@@ -376,12 +376,12 @@ export default function SettingsPage() {
               >
                 {syncStatus === "loading" && "מוריד זמני שבת וחגים..."}
                 {syncStatus === "ok" && "✓ שבתות וחגים עודכנו"}
-                {syncStatus === "error" && "שגיאה — נסה/י שוב"}
-                {syncStatus === "idle" && "סנכרן/י שבתות וחגים לשנה הנוכחית"}
+                {syncStatus === "error" && "שגיאה — נסו שוב"}
+                {syncStatus === "idle" && "סנכרנו שבתות וחגים לשנה הנוכחית"}
               </button>
               <div className="rounded-xl p-3" style={{ background: "#111C32" }}>
                 <p className="text-xs text-[#6B8FAA] leading-relaxed">
-                  האפליקציה משתמשת בזמני כניסת שבת המדויקים לפי עיר המגורים שלך. ללא סנכרון, ברירת המחדל היא 19:00.
+                  פעולה חד-פעמית — לאחר הסנכרון הנתונים נשמרים ואין צורך לחזור עליה. האפליקציה משתמשת בזמני כניסת שבת המדויקים לפי עיר המגורים. ללא סנכרון, ברירת המחדל היא 19:00.
                 </p>
               </div>
             </div>
@@ -398,7 +398,7 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm font-semibold text-[#E8EEFF] mb-1">הגדרת משרה</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">הגדר/י שכר שעתי, שעות נוספות ונסיעות. האפליקציה תשתמש בנתונים אלה לכל חישובי השכר.</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">הגדירו שכר שעתי, שעות נוספות ונסיעות. האפליקציה תשתמש בנתונים אלה לכל חישובי השכר.</p>
               </div>
               <div>
                 <p className="text-sm font-semibold text-[#E8EEFF] mb-1">כמה משרות</p>

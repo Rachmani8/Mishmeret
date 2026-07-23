@@ -41,12 +41,12 @@ export default function JobWizard({ open, initialColor, onClose }: Props) {
 
   const progressPct = step === 0 ? 0 : step >= 7 ? 100 : Math.round((step / STEP_COUNT) * 100);
 
-  const nextLabel = step === 0 ? "← בואו נתחיל" : step === 6 ? "← סיכום" : "← המשך";
+  const nextLabel = step === 0 ? "בואו נתחיל" : step === 6 ? "סיכום" : "הבא";
   const nextClass = "bg-gradient-to-l from-[#2a5bd4] to-[#5b9af5]";
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex flex-col bg-[#0d1220] transition-transform duration-300 ${
+      className={`fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-[100] flex flex-col bg-[#0d1220] transition-transform duration-300 ${
         open ? "translate-y-0" : "translate-y-full"
       }`}
       aria-hidden={!open}
@@ -55,22 +55,24 @@ export default function JobWizard({ open, initialColor, onClose }: Props) {
       {/* Progress bar — hidden on welcome and summary */}
       {step > 0 && step < 7 && (
         <div className="px-5 pt-12 pb-0">
-          <div className="flex justify-between items-center mb-2.5">
-            <span className="text-[11px] text-[#3a4a70] tracking-wide">
+          <div className="flex mb-2.5">
+            <span className="text-[11px] text-[#a8b8d0] tracking-wide">
               שלב {step} מתוך {STEP_COUNT}
             </span>
-            <button onClick={next} className="text-[11px] text-[#3a4a70] underline underline-offset-2">
-              דלג/י
-            </button>
           </div>
-          <div className="h-0.5 bg-[#1a2038] rounded-full">
-            <div
-              className="h-full rounded-full transition-all duration-300"
-              style={{
-                width: `${progressPct}%`,
-                background: "linear-gradient(90deg, #3b6fd4, #5b9af5)",
-              }}
-            />
+          <div className="flex gap-1">
+            {Array.from({ length: STEP_COUNT }).map((_, i) => (
+              <div
+                key={i}
+                className="flex-1 h-1.5 rounded-full border transition-all duration-300"
+                style={{
+                  borderColor: i < step ? "#5b9af5" : "#2a3050",
+                  background: i < step
+                    ? "linear-gradient(90deg, #3b6fd4, #5b9af5)"
+                    : "#1a2038",
+                }}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -133,7 +135,7 @@ export default function JobWizard({ open, initialColor, onClose }: Props) {
       >
         <button
           onClick={step === 0 ? () => onClose() : back}
-          className="w-12 h-12 flex-none flex items-center justify-center rounded-2xl text-[#8090b8] text-lg"
+          className="w-12 h-12 flex-none flex items-center justify-center rounded-2xl text-[#a8b8d0] text-lg"
           style={{ background: "#1a2540", border: "1.5px solid #243050" }}
         >
           →
@@ -150,7 +152,7 @@ export default function JobWizard({ open, initialColor, onClose }: Props) {
             onClick={handleSave}
             className="flex-1 h-12 rounded-2xl text-white text-[15px] font-bold flex items-center justify-center gap-2 bg-gradient-to-l from-[#1a8a50] to-[#2ac870]"
           >
-            ✓ שמור/י משרה
+            ✓ שמרו משרה
           </button>
         )}
       </div>
@@ -169,7 +171,7 @@ function TipBox({ children }: { children: React.ReactNode }) {
         borderRight: "3px solid rgba(91,154,245,0.35)",
       }}
     >
-      <p className="text-[12px] text-[#6a8acc] leading-relaxed">{children}</p>
+      <p className="text-[12px] text-[#9ab5e0] leading-relaxed">{children}</p>
     </div>
   );
 }
@@ -215,7 +217,7 @@ function ToggleRow({
     >
       <div>
         <div className="text-[14px] font-semibold text-[#dde4f8]">{label}</div>
-        {sub && <div className="text-[11px] text-[#3a4a70] mt-0.5">{sub}</div>}
+        {sub && <div className="text-[11px] text-[#a8b8d0] mt-0.5">{sub}</div>}
       </div>
       <ToggleSwitch on={on} onToggle={onToggle} />
     </div>
@@ -235,9 +237,9 @@ function StepWelcome() {
     <div className="text-center pt-8 pb-4">
       <div className="text-5xl mb-4">👋</div>
       <h2 className="text-[22px] font-extrabold text-[#dde4f8] leading-tight mb-3">
-        בוא/י נגדיר<br />את המשרה שלך
+        בואו נגדיר<br />את המשרה שלכם
       </h2>
-      <p className="text-[13px] text-[#8090b8] leading-relaxed mb-8">
+      <p className="text-[13px] text-[#a8b8d0] leading-relaxed mb-8">
         6 שאלות קצרות — כולן<br />עם ברירות מחדל לפי חוק.<br />לוקח בערך דקה.
       </p>
       <div className="space-y-2 text-right">
@@ -253,7 +255,7 @@ function StepWelcome() {
             <span className="text-lg">{item.icon}</span>
             <div>
               <div className="text-[12px] font-semibold text-[#dde4f8]">{item.title}</div>
-              <div className="text-[11px] text-[#3a4a70]">{item.sub}</div>
+              <div className="text-[11px] text-[#a8b8d0]">{item.sub}</div>
             </div>
           </div>
         ))}
@@ -268,10 +270,9 @@ function StepName({ value, onChange }: { value: string; onChange: (v: string) =>
       <StepEyebrow>התחלה</StepEyebrow>
       <StepHeading>מה שם המשרה?</StepHeading>
       <TipBox>
-        זה רק לזיהוי שלך — למשל{" "}
-        <strong className="text-[#5b9af5]">״גילי״</strong>,{" "}
-        <strong className="text-[#5b9af5]">״קפה שעורה״</strong> או{" "}
-        <strong className="text-[#5b9af5]">״משמרת לילה״</strong>. ניתן לשנות בכל עת.
+        זה רק לזיהוי — למשל{" "}
+        <strong className="text-[#5b9af5]">״עבודה ראשית״</strong> או{" "}
+        <strong className="text-[#5b9af5]">״עבודה שנייה״</strong>. ניתן לשנות בכל עת.
       </TipBox>
       <input
         type="text"
@@ -296,8 +297,7 @@ function StepWage({ value, onChange }: { value: number; onChange: (v: number) =>
       <StepHeading>כמה מרוויחים<br />לשעה?</StepHeading>
       <TipBox>
         שכר המינימום עומד על{" "}
-        <strong className="text-[#5b9af5]">32.30 ₪</strong> לשעה. לא בטוח/ה? תוכל/י
-        לשנות אחר כך.
+        <strong className="text-[#5b9af5]">32.30 ₪</strong> לשעה. לא בטוחים? אפשר לשנות אחר כך.
       </TipBox>
       <div
         className="flex items-center gap-3 px-4 py-4 rounded-2xl mb-3"
@@ -305,7 +305,7 @@ function StepWage({ value, onChange }: { value: number; onChange: (v: number) =>
       >
         <button
           onClick={() => adj(-1)}
-          className="w-11 h-11 flex-none rounded-xl flex items-center justify-center text-2xl text-[#8090b8]"
+          className="w-11 h-11 flex-none rounded-xl flex items-center justify-center text-2xl text-[#a8b8d0]"
           style={{ background: "#0d1220", border: "1px solid #243050" }}
         >
           −
@@ -320,7 +320,7 @@ function StepWage({ value, onChange }: { value: number; onChange: (v: number) =>
             onFocus={(e) => e.target.select()}
             className="w-24 text-center text-[32px] font-extrabold text-[#dde4f8] bg-transparent focus:outline-none tabular-nums"
           />
-          <span className="text-[13px] text-[#8090b8]">₪/שע׳</span>
+          <span className="text-[13px] text-[#a8b8d0]">₪/שע׳</span>
         </div>
         <button
           onClick={() => adj(1)}
@@ -344,7 +344,7 @@ function FactorRow({
       className="flex justify-between items-center py-2.5 border-b last:border-0"
       style={{ borderColor: "rgba(255,255,255,0.08)" }}
     >
-      <span className="text-[13px] text-[#8090b8]">{label}</span>
+      <span className="text-[13px] text-[#a8b8d0]">{label}</span>
       <div className="flex items-center gap-2">
         <span
           className="px-3 py-1 rounded-lg text-[14px] font-bold text-[#dde4f8] tabular-nums"
@@ -377,8 +377,7 @@ function StepOvertime({
       <StepHeading>תעריפי שעות<br />נוספות ותוספות</StepHeading>
       <TipBox>
         כל הערכים מטה הם{" "}
-        <strong className="text-[#5b9af5]">לפי החוק הישראלי</strong>. אם המעסיק שלך לא
-        קבע אחרת — אפשר לאשר ולהמשיך.
+        <strong className="text-[#5b9af5]">לפי החוק הישראלי</strong>. אם המעסיק לא קבע אחרת — אפשר לאשר ולהמשיך.
       </TipBox>
 
       {!expanded ? (
@@ -392,7 +391,7 @@ function StepOvertime({
             onClick={onExpand}
             className="w-full text-[11px] text-[#5b9af5] underline underline-offset-2 text-center mt-4 opacity-70"
           >
-            רוצה לשנות ערכים? לחץ/י כאן
+            רוצים לשנות ערכים? לחצו כאן
           </button>
         </>
       ) : (
@@ -410,7 +409,7 @@ function StepOvertime({
             className="flex justify-between items-center py-2.5 border-b last:border-0"
             style={{ borderColor: "rgba(255,255,255,0.08)" }}
           >
-            <span className="text-[13px] text-[#8090b8]">{label}</span>
+            <span className="text-[13px] text-[#a8b8d0]">{label}</span>
             <input
               type="number"
               value={draft[key] as number}
@@ -435,18 +434,17 @@ function StepTaxPoints({ value, onChange }: { value: number; onChange: (v: numbe
   return (
     <>
       <StepEyebrow>מס הכנסה</StepEyebrow>
-      <StepHeading>כמה נקודות<br />זיכוי יש לך?</StepHeading>
+      <StepHeading>כמה נקודות<br />זיכוי יש לכם?</StepHeading>
       <TipBox>
         נקודת זיכוי = <strong className="text-[#5b9af5]">223 ₪</strong> פחות מס בחודש.
-        לתושב/ת ישראל רגיל/ה —{" "}
-        <strong className="text-[#5b9af5]">2.25 נקודות</strong> מינימום. ניתן לבדוק
-        בתלוש האחרון שלך.
+        לתושבי ישראל —{" "}
+        <strong className="text-[#5b9af5]">2.25 נקודות</strong> מינימום. ניתן לבדוק בתלוש האחרון.
       </TipBox>
 
       <div className="flex items-center justify-center gap-3 mb-3">
         <button
           onClick={() => adj(-0.25)}
-          className="w-12 h-12 flex items-center justify-center rounded-2xl text-2xl text-[#8090b8]"
+          className="w-12 h-12 flex items-center justify-center rounded-2xl text-2xl text-[#a8b8d0]"
           style={{ background: "#1a2540", border: "1.5px solid #243050" }}
         >
           −
@@ -465,17 +463,18 @@ function StepTaxPoints({ value, onChange }: { value: number; onChange: (v: numbe
           +
         </button>
       </div>
-      <p className="text-center text-[12px] text-[#3a4a70] mb-4">
-        ברירת מחדל: 2.25 (תושב/ת ישראל)
+      <p className="text-center text-[12px] text-[#a8b8d0] mb-4">
+        ברירת מחדל: 2.25 (תושבי ישראל)
       </p>
       <a
-        href="https://secapp.taxes.gov.il/srsimulatorNZ/#/simulator"
+        href="https://www.hon.co.il/%d7%9e%d7%97%d7%a9%d7%91%d7%95%d7%9f-%d7%a0%d7%a7%d7%95%d7%93%d7%95%d7%aa-%d7%96%d7%99%d7%9b%d7%95%d7%99/"
         target="_blank"
         rel="noopener noreferrer"
         className="block px-3 py-2.5 rounded-xl text-[11px]"
         style={{ background: "#131b2e", border: "1px solid #1a2540", color: "#5b9af5" }}
       >
-        🔗 <span className="underline underline-offset-2">סימולטור נקודות זיכוי — רשות המסים</span>
+        <div className="text-[#a8b8d0] mb-0.5">רוצים לבדוק כמה נקודות זיכוי מגיעות לכם?</div>
+        🔗 <span className="underline underline-offset-2">סימולטור נקודות זיכוי</span>
       </a>
     </>
   );
@@ -491,16 +490,16 @@ function StepCommute({
       <StepEyebrow>הוצאות נסיעה</StepEyebrow>
       <StepHeading>האם מקבלים<br />דמי נסיעה?</StepHeading>
       <TipBox>
-        על פי חוק, המעסיק חייב לשלם את עלות התחבורה הציבורית הזולה ביותר, עד{" "}
-        <strong className="text-[#5b9af5]">22.60 ₪ ליום</strong>.
+        לפי העלות בפועל של התחבורה הציבורית (הזולה ביותר הנדרשת להגעה לעבודה), ובלבד שאינו עולה על תקרה מקסימלית של{" "}
+        <strong className="text-[#5b9af5]">22.60 ₪ ליום עבודה</strong>.
       </TipBox>
-      <ToggleRow label="הפעל/י נסיעות" sub="יתווסף לכל משמרת" on={enabled} onToggle={onToggle} />
+      <ToggleRow label="הפעילו נסיעות" sub="יתווסף לכל משמרת" on={enabled} onToggle={onToggle} />
       {enabled && (
         <div
           className="flex justify-between items-center py-2.5"
           style={{ borderColor: "rgba(255,255,255,0.08)" }}
         >
-          <span className="text-[13px] text-[#8090b8]">סכום יומי (₪)</span>
+          <span className="text-[13px] text-[#a8b8d0]">סכום יומי (₪)</span>
           <input
             type="number"
             value={daily}
@@ -534,24 +533,24 @@ function StepPension({
       <StepEyebrow>פנסיה</StepEyebrow>
       <StepHeading>הגדרות<br />פנסיה</StepHeading>
       <TipBox>
-        פנסיה חובה על כל עובד שכיר. סה&quot;כ{" "}
+        פנסיה חובה על כל העובדים השכירים. סה&quot;כ{" "}
         <strong className="text-[#5b9af5]">18.5% מהשכר</strong> — המעסיק משלם 12.5%,
         העובד/ת 6%.
       </TipBox>
-      <ToggleRow label="הפעל/י פנסיה" sub="חובה על פי חוק" on={enabled} onToggle={onToggle} />
+      <ToggleRow label="הפעילו פנסיה" sub="חובה על פי חוק" on={enabled} onToggle={onToggle} />
       {enabled && (
         <>
           <div
             className="flex justify-between items-center px-4 py-2.5 rounded-xl mt-3 mb-2"
             style={{ background: "rgba(52,196,122,0.07)", border: "1px solid rgba(52,196,122,0.15)" }}
           >
-            <span className="text-[13px] text-[#8090b8]">סה&quot;כ מהשכר</span>
+            <span className="text-[13px] text-[#a8b8d0]">סה&quot;כ הפרשה לפנסיה</span>
             <span className="text-[18px] font-extrabold text-[#34c47a]">
               {total.toFixed(1)}%
             </span>
           </div>
           {[
-            { label: "עובד/ת (%)", value: employee, onChange: onEmployee },
+            { label: "חלק העובד/ת (%)", value: employee, onChange: onEmployee },
             { label: "תגמולים מעסיק (%)", value: employer, onChange: onEmployer },
             { label: "פיצויים מעסיק (%)", value: severance, onChange: onSeverance },
           ].map(({ label, value, onChange }) => (
@@ -560,7 +559,7 @@ function StepPension({
               className="flex justify-between items-center py-2.5 border-b last:border-0"
               style={rowBorder}
             >
-              <span className="text-[13px] text-[#8090b8]">{label}</span>
+              <span className="text-[13px] text-[#a8b8d0]">{label}</span>
               <input
                 type="number"
                 value={value}
@@ -582,20 +581,33 @@ function StepPension({
 
 const SUMMARY_ROW_BORDER = { borderColor: "rgba(255,255,255,0.08)" };
 
-function SummarySection({ title, children }: { title: string; children: React.ReactNode }) {
+function SummarySection({ title, children, onEdit }: { title: string; children: React.ReactNode; onEdit?: () => void }) {
   return (
     <div
       className="rounded-2xl overflow-hidden mb-3"
       style={{ background: "#1a2540", border: "1px solid #1a2038" }}
     >
       <div
-        className="px-4 py-2 text-[10px] uppercase tracking-widest text-[#3a4a70] border-b"
+        className="px-4 py-2.5 text-[12px] font-semibold text-[#dde4f8] border-b underline underline-offset-2 flex items-center gap-2"
         style={SUMMARY_ROW_BORDER}
       >
-        {title}
+        <EditIcon onEdit={onEdit} />
+        <span className="flex-1">{title}</span>
       </div>
       {children}
     </div>
+  );
+}
+
+function EditIcon({ onEdit }: { onEdit?: () => void }) {
+  if (!onEdit) return <span className="w-3.5 h-3.5 inline-block" />;
+  return (
+    <button onClick={onEdit} className="text-[#5b9af5] opacity-70 hover:opacity-100 transition-opacity flex-none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+      </svg>
+    </button>
   );
 }
 
@@ -606,21 +618,12 @@ function SummaryRow({
 }) {
   return (
     <div
-      className="flex justify-between items-center px-4 py-2.5 border-b last:border-0"
+      className="flex items-center px-4 py-2.5 border-b last:border-0 gap-2"
       style={SUMMARY_ROW_BORDER}
     >
-      <span className="text-[12px] text-[#8090b8]">{label}</span>
-      <div className="flex items-center gap-2">
-        {onEdit && (
-          <button
-            onClick={onEdit}
-            className="text-[10px] text-[#5b9af5] underline underline-offset-1 opacity-70"
-          >
-            ערוך
-          </button>
-        )}
-        <span className="text-[13px] font-bold text-[#dde4f8]">{value}</span>
-      </div>
+      <EditIcon onEdit={onEdit} />
+      <span className="text-[12px] text-[#a8b8d0] flex-1">{label}</span>
+      <span className="text-[13px] font-bold text-[#dde4f8]">{value}</span>
     </div>
   );
 }
@@ -641,7 +644,7 @@ function StepSummary({
       <div className="text-center pt-4 pb-6">
         <div className="text-4xl mb-2">🎉</div>
         <h2 className="text-[20px] font-extrabold text-[#dde4f8] mb-1">הכל מוכן!</h2>
-        <p className="text-[12px] text-[#3a4a70]">בדוק/י ואשר/י את הגדרות המשרה</p>
+        <p className="text-[12px] text-[#a8b8d0]">בדקו ואשרו את הגדרות המשרה</p>
       </div>
 
       <SummarySection title="בסיס">
@@ -649,7 +652,7 @@ function StepSummary({
         <SummaryRow label="שכר שעתי" value={`${draft.baseHourlyRate} ₪/שע׳`} onEdit={() => onGoTo(2)} />
       </SummarySection>
 
-      <SummarySection title="שעות עבודה">
+      <SummarySection title="שעות עבודה" onEdit={() => onGoTo(3)}>
         <SummaryRow label="נורמת יומית" value={`${draft.dailyNormHours} שע׳`} />
         <SummaryRow label="שישי/שבת/חג" value={`${draft.weekendMultiplier}×`} />
         <SummaryRow label="שע׳ נוספות" value={`${draft.overtime1Multiplier}× / ${draft.overtime2Multiplier}×`} />
@@ -664,16 +667,18 @@ function StepSummary({
         <SummaryRow
           label="נסיעות"
           value={draft.commuteEnabled ? `${draft.commuteDaily} ₪/יום ✓` : "ללא"}
+          onEdit={() => onGoTo(5)}
         />
         <SummaryRow
           label="פנסיה סה״כ"
           value={draft.pensionEnabled ? `${pensionTotal}% ✓` : "ללא"}
+          onEdit={() => onGoTo(6)}
         />
       </SummarySection>
 
       <div className="pb-4">
-        <p className="text-center text-[11px] text-[#3a4a70]">
-          לחץ/י שמור/י למטה לסיום
+        <p className="text-center text-[11px] text-[#a8b8d0]">
+          לחצו על שמרו למטה לסיום
         </p>
       </div>
     </>
