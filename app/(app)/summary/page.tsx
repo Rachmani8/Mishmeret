@@ -210,19 +210,19 @@ export default function SummaryPage() {
         <>
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setInfoOpen(false)} />
           <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-[#162038] border rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-            <h2 className="text-base font-bold text-[#E8EEFF] mb-4">סיכום חודשי — מה יש פה?</h2>
+            <h2 className="text-base font-bold text-[#E8EEFF] mb-4">יומן — מה יש פה?</h2>
             <div className="space-y-4">
               <div>
                 <p className="text-sm font-semibold text-[#E8EEFF] mb-1">רשימת משמרות</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">תצוגה מפורטת של כל המשמרות בחודש — שעות עבודה, סוג יום ורווח יומי.</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">כל המשמרות של החודש עם שעות ורווח יומי. לחץ/י על שורה כדי לערוך.</p>
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">סיכום בתחתית</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">סה״כ שעות, ברוטו לפני ניכויים ונסיעות — מחושב אוטומטית לפי הגדרות המשרה.</p>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">סה״כ בתחתית</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">סך שעות, ברוטו ונסיעות — מחושב לפי הגדרות המשרה שלך.</p>
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">ניווט בין חודשים</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">השתמש/י בחצים כדי לעבור בין חודשים ולראות היסטוריה.</p>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">מעבר בין חודשים</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">השתמש/י בחצים כדי לראות חודשים קודמים.</p>
               </div>
             </div>
             <button

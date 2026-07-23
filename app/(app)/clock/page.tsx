@@ -471,16 +471,19 @@ export default function ClockPage() {
             <h2 className="text-base font-bold text-[#E8EEFF] mb-4">שעון נוכחות — איך עובד?</h2>
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">התחלת משמרת</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">לחץ/י "התחל משמרת" — שעת הכניסה נרשמת אוטומטית. הטיימר רץ כל עוד המשמרת פעילה.</p>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">כניסה למשמרת</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">לחץ/י "התחל משמרת" בהגיעך. הטיימר רץ ושעת הכניסה נשמרת.</p>
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">סיום וווידוא</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">לחץ/י "סיום משמרת" ואז "ווידוא יום" כדי לאשר את השעות ולשמור את המשמרת ביומן.</p>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">יציאה מהמשמרת</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">לחץ/י "סיום משמרת". תופיע בקשה לאשר את השעות — לחץ/י "ווידוא יום" כדי לשמור ביומן.</p>
               </div>
               <div>
                 <p className="text-sm font-semibold text-[#E8EEFF] mb-1">משמרת נוספת</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">אחרי ווידוא אפשר לפתוח משמרת נוספת באותו יום — למשל, אם יש הפסקה ארוכה ביניהן.</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">אחרי ווידוא, אפשר להתחיל משמרת שנייה באותו יום.</p>
+              </div>
+              <div className="rounded-xl bg-yellow-500/10 border border-yellow-500/20 px-3 py-2">
+                <p className="text-sm text-yellow-300/80 leading-relaxed">⚠️ הנתונים לא נשמרים אם לא לחצת "ווידוא יום".</p>
               </div>
             </div>
             <button

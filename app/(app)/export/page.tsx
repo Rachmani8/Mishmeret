@@ -307,15 +307,21 @@ export default function ExportPage() {
         <>
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setInfoOpen(false)} />
           <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-[#162038] border rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-            <h2 className="text-base font-bold text-[#E8EEFF] mb-4">ייצוא לאקסל — מה יש פה?</h2>
+            <h2 className="text-base font-bold text-[#E8EEFF] mb-4">ייצוא לאקסל — איך עובד?</h2>
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">בחירת חודשים</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">לחץ/י על חודש אחד או יותר לכלול בייצוא. כל חודש יופיע כגיליון נפרד בקובץ ה-Excel.</p>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">בחר/י חודשים</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">כל חודש שתסמן/י יופיע כגיליון נפרד בקובץ האקסל.</p>
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">בחירת שדות</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">סמן/י אילו עמודות לכלול — למשל רק שעות לדיווח למעסיק, או שכר מלא לחישוב אישי.</p>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">בחר/י עמודות</p>
+                <div className="text-sm text-[#6B8FAA] space-y-1">
+                  <p>• <span className="text-[#E8EEFF]">שעות בלבד</span> — לדיווח למעסיק</p>
+                  <p>• <span className="text-[#E8EEFF]">שכר מלא</span> — לעיון אישי ובדיקת שכר</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">הקובץ יורד ישירות למכשיר שלך.</p>
               </div>
             </div>
             <button

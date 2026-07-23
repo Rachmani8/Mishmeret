@@ -386,22 +386,22 @@ export default function CalendarPage() {
         <>
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setInfoOpen(false)} />
           <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-[#162038] border rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-            <h2 className="text-base font-bold text-[#E8EEFF] mb-4">לוח שנה ורישום משמרות — איך עובד?</h2>
+            <h2 className="text-base font-bold text-[#E8EEFF] mb-4">לוח שנה — איך מוסיפים משמרת?</h2>
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">רישום משמרות</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">לחץ/י על יום בלוח כדי לפתוח אותו — תוכל/י להוסיף, לערוך או למחוק משמרות. ניתן לרשום יותר ממשמרת אחת ביום.</p>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">רישום משמרת</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">לחץ/י על יום בלוח כדי לפתוח ולרשום משמרת. אפשר לרשום כמה משמרות ביום.</p>
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">כניסה ויציאה</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">בלשונית <span className="text-[#E8EEFF] font-medium">שעון</span> תוכל/י להתחיל ולסיים משמרת — השעה תירשם אוטומטית.</p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">ימים מיוחדים</p>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">צבעי ימים</p>
                 <div className="text-sm text-[#6B8FAA] space-y-0.5">
-                  <p><span className="text-orange-400">ש׳</span> שבת — האות בכתום</p>
-                  <p><span className="text-purple-400">א׳</span> חג / ערב חג — האות בסגול</p>
+                  <p><span className="text-orange-400">ש׳</span> בכתום = שבת &nbsp;|&nbsp; <span className="text-purple-400">א׳</span> בסגול = חג / ערב חג</p>
+                  <p>החישוב מותאם אוטומטית לפי סוג היום.</p>
                 </div>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">מעבר בין חודשים</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">לחץ/י על החצים בכותרת למעלה.</p>
               </div>
             </div>
             <button

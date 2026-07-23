@@ -394,12 +394,21 @@ export default function SettingsPage() {
         <>
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => { setInfoOpen(false); localStorage.setItem("settingsInfoDismissed", "1"); }} />
           <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-[#162038] border rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-            <h2 className="text-base font-bold text-[#E8EEFF] mb-4">ברוכ/ה הבא/ה להגדרות!</h2>
+            <h2 className="text-base font-bold text-[#E8EEFF] mb-4">הגדרות — איך מגדירים משרה?</h2>
             <div className="space-y-4">
-              <p className="text-sm text-[#6B8FAA] leading-relaxed">כאן תוכל/י להגדיר משרה אחת או יותר — האפליקציה תשתמש בהן כדי לחשב את שכרך.</p>
-              <p className="text-sm text-[#6B8FAA] leading-relaxed">בכל קטע תמצא/י הסבר קצר על המשמעות, מה קובע החוק, ואיך לבדוק בתלוש שלך.</p>
-              <p className="text-sm text-[#6B8FAA] leading-relaxed">סיימת? לחץ/י <span className="text-[#E8EEFF] font-semibold">שמור/י</span> — והמשרה מוכנה לרישום משמרות.</p>
-              <p className="text-sm text-[#6B8FAA] leading-relaxed">מומלץ גם לסנכרן זמני שבת וחגים לדיוק מירבי.</p>
+              <div>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">הגדרת משרה</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">הגדר/י שכר שעתי, שעות נוספות ונסיעות. האפליקציה תשתמש בנתונים אלה לכל חישובי השכר.</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">כמה משרות</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">אפשר להוסיף מספר משרות — למשל שתי עבודות במקביל.</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">סנכרון שבת וחגים</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">מומלץ לסנכרן כדי שחישובי שישי/שבת וחגים יהיו מדויקים.</p>
+              </div>
+              <p className="text-sm text-[#6B8FAA] leading-relaxed">לאחר שמירה, כל החישובים באפליקציה מתעדכנים אוטומטית.</p>
             </div>
             <button
               onClick={() => { setInfoOpen(false); localStorage.setItem("settingsInfoDismissed", "1"); }}

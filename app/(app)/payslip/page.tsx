@@ -315,19 +315,22 @@ export default function PayslipPage() {
         <>
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setInfoOpen(false)} />
           <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-[#162038] border rounded-2xl shadow-2xl max-w-[400px] mx-auto p-6" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-            <h2 className="text-base font-bold text-[#E8EEFF] mb-4">תלוש משוער — מה יש פה?</h2>
+            <h2 className="text-base font-bold text-[#E8EEFF] mb-4">תלוש משוער — מה זה אומר?</h2>
             <div className="space-y-4">
-              <div>
-                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">חישוב שכר</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">האפליקציה מחשבת תלוש משוער על בסיס המשמרות שרשמת והגדרות המשרה — שכר בסיס, שעות נוספות, תוספות שבת וחג ונסיעות.</p>
+              <div className="rounded-xl bg-blue-500/10 border border-blue-500/20 px-3 py-2">
+                <p className="text-sm text-blue-300/80 leading-relaxed">זהו תלוש <span className="font-semibold">משוער בלבד</span> — מבוסס על המשמרות שרשמת. לא מסמך רשמי.</p>
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">ניכויים</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">מוצגים ניכויי ביטוח לאומי, ביטוח בריאות, מס הכנסה ופנסיה — לפי מדרגות המס העדכניות.</p>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">מה מוצג</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">ברוטו (בסיס + שעות נוספות + תוספות), וניכויים: ביטוח לאומי, בריאות, מס הכנסה ופנסיה.</p>
               </div>
               <div>
                 <p className="text-sm font-semibold text-[#E8EEFF] mb-1">מוודא תלוש</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">ניתן להזין את הנתונים מהתלוש האמיתי כדי להשוות ולבדוק אם הכל תואם.</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">הזן/י נתונים מהתלוש האמיתי שלך כדי לבדוק אם חושב נכון.</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">טיפים</p>
+                <p className="text-sm text-[#6B8FAA] leading-relaxed">נרשמים בנפרד ואינם נכללים בחישוב המס — כנדרש בחוק.</p>
               </div>
             </div>
             <button
