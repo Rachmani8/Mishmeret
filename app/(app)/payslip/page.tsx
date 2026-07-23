@@ -12,83 +12,6 @@ import {
   MONTH_NAMES_HE,
 } from "@/lib/calculations";
 
-interface ActualValues {
-  baseSalary: string;
-  overtime1Pay: string;
-  overtime2Pay: string;
-  weekendBonus: string;
-  commute: string;
-  grossTotal: string;
-  pensionEmployee: string;
-  nationalInsurance: string;
-  healthInsurance: string;
-  incomeTax: string;
-  netPay: string;
-}
-
-const emptyActual = (): ActualValues => ({
-  baseSalary: "", overtime1Pay: "", overtime2Pay: "", weekendBonus: "", commute: "", grossTotal: "",
-  pensionEmployee: "", nationalInsurance: "", healthInsurance: "", incomeTax: "", netPay: "",
-});
-
-function Row({
-  label,
-  calculated,
-  actual,
-  onChange,
-  isNegative = false,
-  bold = false,
-  hours,
-}: {
-  label: string;
-  calculated: number;
-  actual: string;
-  onChange: (v: string) => void;
-  isNegative?: boolean;
-  bold?: boolean;
-  hours?: number;
-}) {
-  const actualNum = parseFloat(actual);
-  const diff = !isNaN(actualNum) ? actualNum - calculated : null;
-  const hasDiscrepancy = diff !== null && Math.abs(diff) >= 1;
-  const walletImpact = diff !== null ? (isNegative ? -diff : diff) : null;
-  const isGood = walletImpact !== null && walletImpact > 0;
-
-  return (
-    <div className={`flex items-center gap-2 py-2.5 last:border-0 ${bold ? "border-t mt-1 pt-3" : "border-b"}`}
-      style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-      <span className={`flex-1 text-sm ${bold ? "font-semibold text-[#E8EEFF]" : "text-[#6B8FAA]"}`}>{label}</span>
-      <span className="text-sm font-medium text-[#3E5672] w-16 text-left">
-        {hours !== undefined ? `${hours.toFixed(2)} ש׳` : ""}
-      </span>
-      <span dir="ltr" className={`text-sm font-medium w-24 text-left ${isNegative ? "text-red-400" : bold ? "text-[#3B7FF5] font-bold" : "text-[#E8EEFF]"}`}>
-        {isNegative ? "-" : ""}{formatCurrency(calculated).replace("₪", "")}
-      </span>
-      <div className="relative w-24">
-        <input
-          type="number"
-          placeholder="בפועל"
-          value={actual}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={(e) => e.target.select()}
-          className={`w-full text-sm px-2 py-1 rounded-lg text-center focus:outline-none focus:ring-2 border ${
-            hasDiscrepancy
-              ? isGood
-                ? "border-green-500 ring-green-500/20 bg-green-900/20 text-green-400"
-                : "border-red-500 ring-red-500/20 bg-red-900/20 text-red-400"
-              : "border-white/[0.15] bg-[#0C1221] text-[#E8EEFF] focus:ring-[#3B7FF5]/40"
-          }`}
-        />
-        {hasDiscrepancy && (
-          <span className={`absolute -top-4 right-0 text-[10px] font-medium ${isGood ? "text-green-400" : "text-red-400"}`}>
-            {walletImpact! > 0 ? "+" : ""}{walletImpact!.toFixed(0)}₪
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function PayslipPage() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -99,8 +22,6 @@ export default function PayslipPage() {
   const [totalTips, setTotalTips] = useState(0);
   const shabbatTimes = useShabbatTimes(year);
   const holidays = useHolidayTimes(year);
-  const [actual, setActual] = useState<ActualValues>(emptyActual());
-  const [showValidator, setShowValidator] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
 
   useEffect(() => {
@@ -136,11 +57,7 @@ export default function PayslipPage() {
     if (m > 12) { m = 1; y++; }
     setMonth(m);
     setYear(y);
-    setActual(emptyActual());
   };
-
-  const setActualField = (key: keyof ActualValues, v: string) =>
-    setActual((prev) => ({ ...prev, [key]: v }));
 
   return (
     <div className="flex flex-col min-h-full" dir="rtl">
@@ -218,29 +135,35 @@ export default function PayslipPage() {
             </div>
           </div>
 
-          {/* Column headers (validator mode) */}
-          {showValidator && (
-            <div className="flex items-center gap-2 px-0">
-              <span className="flex-1" />
-              <span className="text-xs text-[#3E5672] w-24 text-center">מחושב</span>
-              <span className="text-xs text-[#3E5672] w-24 text-center">בתלוש בפועל</span>
-            </div>
-          )}
-
           {/* Income section */}
           <div className="bg-[#162038] border rounded-2xl px-4 py-1" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
             <h3 className="text-xs font-semibold text-[#3E5672] uppercase tracking-wide pt-3 pb-1">הכנסות</h3>
-            <Row label="שכר בסיס" calculated={payslip.baseSalary} actual={actual.baseSalary} onChange={(v) => setActualField("baseSalary", v)} hours={payslip.totalHours} />
+            <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+              <span className="flex-1 text-sm text-[#6B8FAA]">שכר בסיס</span>
+              <span className="text-sm font-medium text-[#E8EEFF]">{formatCurrency(payslip.baseSalary)}</span>
+            </div>
             {payslip.overtime1Pay > 0 && (
-              <Row label="שעות נוספות 125%" calculated={payslip.overtime1Pay} actual={actual.overtime1Pay} onChange={(v) => setActualField("overtime1Pay", v)} hours={payslip.overtime1Hours} />
+              <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+                <span className="flex-1 text-sm text-[#6B8FAA]">שעות נוספות 125%</span>
+                <span className="text-sm font-medium text-[#E8EEFF]">{formatCurrency(payslip.overtime1Pay)}</span>
+              </div>
             )}
             {payslip.overtime2Pay > 0 && (
-              <Row label="שעות נוספות 150%" calculated={payslip.overtime2Pay} actual={actual.overtime2Pay} onChange={(v) => setActualField("overtime2Pay", v)} hours={payslip.overtime2Hours} />
+              <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+                <span className="flex-1 text-sm text-[#6B8FAA]">שעות נוספות 150%</span>
+                <span className="text-sm font-medium text-[#E8EEFF]">{formatCurrency(payslip.overtime2Pay)}</span>
+              </div>
             )}
             {payslip.weekendHolidayBonus > 0 && (
-              <Row label="תוספת שבת/חג 150%" calculated={payslip.weekendHolidayBonus} actual={actual.weekendBonus} onChange={(v) => setActualField("weekendBonus", v)} hours={payslip.weekendHours} />
+              <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+                <span className="flex-1 text-sm text-[#6B8FAA]">תוספת שבת/חג 150%</span>
+                <span className="text-sm font-medium text-[#E8EEFF]">{formatCurrency(payslip.weekendHolidayBonus)}</span>
+              </div>
             )}
-            <Row label="נסיעות" calculated={payslip.commuteTotal} actual={actual.commute} onChange={(v) => setActualField("commute", v)} />
+            <div className="flex items-center gap-2 py-2.5 last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+              <span className="flex-1 text-sm text-[#6B8FAA]">נסיעות</span>
+              <span className="text-sm font-medium text-[#E8EEFF]">{formatCurrency(payslip.commuteTotal)}</span>
+            </div>
           </div>
 
           {/* Gross total card */}
@@ -249,30 +172,29 @@ export default function PayslipPage() {
               <span className="text-white font-semibold text-base">ברוטו</span>
               <span className="text-white font-bold text-xl">{formatCurrency(payslip.grossTotal)}</span>
             </div>
-            {showValidator && (
-              <div className="mt-2 flex items-center gap-2 justify-end">
-                <span className="text-orange-200 text-xs">בפועל:</span>
-                <input
-                  type="number"
-                  placeholder="הזן/י סכום"
-                  value={actual.grossTotal}
-                  onChange={(e) => setActualField("grossTotal", e.target.value)}
-                  onFocus={(e) => e.target.select()}
-                  className="w-28 text-sm px-2 py-1 border border-orange-300 rounded-lg text-center bg-orange-400 text-white placeholder-orange-200 focus:outline-none focus:ring-2 focus:ring-white/50"
-                />
-              </div>
-            )}
           </div>
 
           {/* Deductions section */}
           <div className="bg-[#162038] border rounded-2xl px-4 py-1" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
             <h3 className="text-xs font-semibold text-[#3E5672] uppercase tracking-wide pt-3 pb-1">ניכויים</h3>
             {selectedJob?.pensionEnabled && (
-              <Row label="פנסיה (עובד)" calculated={payslip.pensionEmployee} actual={actual.pensionEmployee} onChange={(v) => setActualField("pensionEmployee", v)} isNegative />
+              <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+                <span className="flex-1 text-sm text-[#6B8FAA]">פנסיה (עובד)</span>
+                <span className="text-sm font-medium text-red-400">-{formatCurrency(payslip.pensionEmployee)}</span>
+              </div>
             )}
-            <Row label="ביטוח לאומי" calculated={payslip.nationalInsurance} actual={actual.nationalInsurance} onChange={(v) => setActualField("nationalInsurance", v)} isNegative />
-            <Row label="ביטוח בריאות" calculated={payslip.healthInsurance} actual={actual.healthInsurance} onChange={(v) => setActualField("healthInsurance", v)} isNegative />
-            <Row label="מס הכנסה" calculated={payslip.incomeTax} actual={actual.incomeTax} onChange={(v) => setActualField("incomeTax", v)} isNegative />
+            <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+              <span className="flex-1 text-sm text-[#6B8FAA]">ביטוח לאומי</span>
+              <span className="text-sm font-medium text-red-400">-{formatCurrency(payslip.nationalInsurance)}</span>
+            </div>
+            <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+              <span className="flex-1 text-sm text-[#6B8FAA]">ביטוח בריאות</span>
+              <span className="text-sm font-medium text-red-400">-{formatCurrency(payslip.healthInsurance)}</span>
+            </div>
+            <div className="flex items-center gap-2 py-2.5 last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+              <span className="flex-1 text-sm text-[#6B8FAA]">מס הכנסה</span>
+              <span className="text-sm font-medium text-red-400">-{formatCurrency(payslip.incomeTax)}</span>
+            </div>
           </div>
 
           {/* Net */}
@@ -291,22 +213,6 @@ export default function PayslipPage() {
               <span className="text-amber-300 font-bold text-xl">{formatCurrency(totalTips)}</span>
             </div>
           )}
-
-          {/* Validator toggle */}
-          <button
-            onClick={() => setShowValidator(!showValidator)}
-            className="w-full py-3 rounded-2xl text-sm font-medium transition-colors border-2 border-dashed text-[#6B8FAA] hover:text-[#3B7FF5] hover:border-[#3B7FF5]/50"
-            style={{ borderColor: "rgba(255,255,255,0.12)" }}
-          >
-            {showValidator ? "סגור/י בדיקת תלוש" : "בדיקת תלוש בפועל"}
-          </button>
-
-          {showValidator && (
-            <div className="bg-amber-900/20 border border-amber-700/30 rounded-2xl px-4 py-3">
-              <p className="text-xs text-amber-400 font-medium mb-1">הנחיות:</p>
-              <p className="text-xs text-amber-500/90">הזן/י את הסכומים מהתלוש שלך בעמודה &quot;בפועל&quot;. הערכים יסומנו בירוק (לטובתך) או אדום (לרעתך) אם יש פערים משמעותיים.</p>
-            </div>
-          )}
         </div>
       )}
 
@@ -323,10 +229,6 @@ export default function PayslipPage() {
               <div>
                 <p className="text-sm font-semibold text-[#E8EEFF] mb-1">מה מוצג</p>
                 <p className="text-sm text-[#6B8FAA] leading-relaxed">ברוטו (בסיס + שעות נוספות + תוספות), וניכויים: ביטוח לאומי, בריאות, מס הכנסה ופנסיה.</p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-[#E8EEFF] mb-1">מוודא תלוש</p>
-                <p className="text-sm text-[#6B8FAA] leading-relaxed">הזן/י נתונים מהתלוש האמיתי שלך כדי לבדוק אם חושב נכון.</p>
               </div>
               <div>
                 <p className="text-sm font-semibold text-[#E8EEFF] mb-1">טיפים</p>
