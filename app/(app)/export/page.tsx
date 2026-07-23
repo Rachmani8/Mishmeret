@@ -267,10 +267,12 @@ export default function ExportPage() {
                     style={idx !== EXPORT_FIELDS.length - 1 ? { borderColor: "rgba(255,255,255,0.06)" } : undefined}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 flex items-center justify-center flex-shrink-0 ${checked ? "text-[#3B7FF5]" : "text-[#243355]"}`}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="w-5 h-5">
-                          <path d="M20 6 9 17l-5-5" />
-                        </svg>
+                      <div className={`w-5 h-5 flex-shrink-0 rounded-md border-2 flex items-center justify-center transition-colors ${checked ? "bg-[#3B7FF5] border-[#3B7FF5]" : "bg-transparent border-[#3E5672]"}`}>
+                        {checked && (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3} className="w-3.5 h-3.5">
+                            <path d="M20 6 9 17l-5-5" />
+                          </svg>
+                        )}
                       </div>
                       <span className="font-medium">{f.label}</span>
                     </div>

@@ -16,21 +16,11 @@ const tabs = [
   },
   {
     href: "/calendar",
-    label: "לוח שנה",
+    label: "יומן",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" strokeWidth={1.8} stroke="currentColor" className="w-6 h-6">
         <rect x="3" y="4" width="18" height="18" rx="2" />
         <path d="M16 2v4M8 2v4M3 10h18" />
-      </svg>
-    ),
-  },
-  {
-    href: "/summary",
-    label: "סיכום",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" strokeWidth={1.8} stroke="currentColor" className="w-6 h-6">
-        <path d="M9 11l3 3L22 4" />
-        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
       </svg>
     ),
   },

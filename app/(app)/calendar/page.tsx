@@ -6,7 +6,8 @@ import type { Job, Shift } from "@/lib/db";
 import Link from "next/link";
 import ShiftDrawer from "@/components/ShiftDrawer";
 import { useHolidayTimes } from "@/lib/useHolidayTimes";
-import { DAY_ABBR_HE, MONTH_NAMES_HE } from "@/lib/calculations";
+import { DAY_ABBR_HE, MONTH_NAMES_HE, calcDayEarnings, calcWorkedHours } from "@/lib/calculations";
+import { useShabbatTimes } from "@/lib/useShabbatTimes";
 
 const JOB_COLORS = ["#3B82F6", "#F97316", "#10B981", "#8B5CF6"];
 
@@ -14,9 +15,10 @@ export default function CalendarPage() {
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
-  const [viewMode, setViewMode] = useState<"week" | "month">("month");
+  const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
   const [currentDate, setCurrentDate] = useState(today);
   const holidays = useHolidayTimes(currentDate.getFullYear());
+  const shabbatTimes = useShabbatTimes(currentDate.getFullYear());
   const [jobs, setJobs] = useState<Job[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -47,17 +49,6 @@ export default function CalendarPage() {
   const jobColorMap = Object.fromEntries(jobs.map((j, i) => [j.id, j.color ?? JOB_COLORS[i % JOB_COLORS.length]]));
   const jobNameMap = Object.fromEntries(jobs.map((j) => [j.id, j.name]));
 
-  const getWeekDays = () => {
-    const startOfWeek = new Date(currentDate);
-    const day = startOfWeek.getDay();
-    startOfWeek.setDate(startOfWeek.getDate() - day);
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(startOfWeek);
-      d.setDate(d.getDate() + i);
-      return d;
-    });
-  };
-
   const getMonthDays = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -75,8 +66,7 @@ export default function CalendarPage() {
 
   const navigate = (dir: -1 | 1) => {
     const d = new Date(currentDate);
-    if (viewMode === "week") d.setDate(d.getDate() + dir * 7);
-    else d.setMonth(d.getMonth() + dir);
+    d.setMonth(d.getMonth() + dir);
     setCurrentDate(d);
   };
 
@@ -93,6 +83,28 @@ export default function CalendarPage() {
     setSelectedDate(key);
   };
 
+  const openShift = (date: Date, jobId: string) => {
+    const job = jobs.find((j) => j.id === jobId) ?? selectedJob;
+    if (!job) return;
+    const key = formatDate(date);
+    const isSat = date.getDay() === 6;
+    const isHoliday = !!holidays[key];
+    const nextKey = formatDate(new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1));
+    const holiday = isHoliday
+      ? holidays[key]
+      : (!isSat && holidays[nextKey] ? `ערב ${holidays[nextKey]}` : undefined);
+    setSelectedDateHoliday(holiday);
+    setSelectedJob(job);
+    setSelectedDate(key);
+  };
+
+  const getMonthDates = () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    return Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1));
+  };
+
   const handleSave = useCallback(async (_shift: Shift) => {
     await loadShifts(currentDate);
   }, [currentDate, loadShifts]);
@@ -101,18 +113,7 @@ export default function CalendarPage() {
     setShifts((prev) => prev.filter((s) => s.id !== shiftId));
   }, []);
 
-  const headerLabel =
-    viewMode === "month"
-      ? `${MONTH_NAMES_HE[currentDate.getMonth()]} ${currentDate.getFullYear()}`
-      : (() => {
-          const days = getWeekDays();
-          const first = days[0];
-          const last = days[6];
-          if (first.getMonth() === last.getMonth()) {
-            return `${first.getDate()}–${last.getDate()} ${MONTH_NAMES_HE[first.getMonth()]} ${first.getFullYear()}`;
-          }
-          return `${first.getDate()} ${MONTH_NAMES_HE[first.getMonth()]} – ${last.getDate()} ${MONTH_NAMES_HE[last.getMonth()]}`;
-        })();
+  const headerLabel = `${MONTH_NAMES_HE[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
 
   const DayCell = ({ date, compact = false }: { date: Date; compact?: boolean }) => {
     const key = formatDate(date);
@@ -195,7 +196,7 @@ export default function CalendarPage() {
               <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
             </svg>
           </Link>
-          <h1 className="text-xl font-bold text-[#E8EEFF]">לוח שנה</h1>
+          <h1 className="text-xl font-bold text-[#E8EEFF]">יומן</h1>
           <button
             onClick={() => setInfoOpen(true)}
             className="absolute right-0 w-7 h-7 rounded-full bg-[#FF6B2C]/15 text-[#FF6B2C] border border-[#FF6B2C]/50 hover:border-[#FF6B2C] hover:bg-[#FF6B2C]/25 flex items-center justify-center text-sm font-bold transition-all"
@@ -204,26 +205,36 @@ export default function CalendarPage() {
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex bg-[#162038] rounded-lg p-0.5 text-xs">
+        <div className="flex items-center justify-between">
+          <div className="flex bg-[#162038] rounded-full p-0.5 gap-0.5">
             <button
-              onClick={() => setViewMode("week")}
-              className={`px-3 py-1 rounded-md font-medium transition-colors ${viewMode === "week" ? "bg-[#1C2B4A] text-[#E8EEFF]" : "text-[#3E5672]"}`}
+              onClick={() => setViewMode("calendar")}
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${viewMode === "calendar" ? "bg-[#3B7FF5] text-white" : "text-[#6B8FAA]"}`}
             >
-              שבועי
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-4 h-4">
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <path d="M16 2v4M8 2v4M3 10h18" />
+              </svg>
             </button>
             <button
-              onClick={() => setViewMode("month")}
-              className={`px-3 py-1 rounded-md font-medium transition-colors ${viewMode === "month" ? "bg-[#1C2B4A] text-[#E8EEFF]" : "text-[#3E5672]"}`}
+              onClick={() => setViewMode("list")}
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${viewMode === "list" ? "bg-[#3B7FF5] text-white" : "text-[#6B8FAA]"}`}
             >
-              חודשי
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-4 h-4">
+                <line x1="8" y1="6" x2="21" y2="6" />
+                <line x1="8" y1="12" x2="21" y2="12" />
+                <line x1="8" y1="18" x2="21" y2="18" />
+                <line x1="3" y1="6" x2="3.01" y2="6" />
+                <line x1="3" y1="12" x2="3.01" y2="12" />
+                <line x1="3" y1="18" x2="3.01" y2="18" />
+              </svg>
             </button>
           </div>
           <div className="flex items-center gap-1 flex-1 justify-center">
             <button onClick={() => navigate(-1)} className="p-1 text-[#6B8FAA] hover:text-[#E8EEFF] transition-colors">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path d="m9 18 6-6-6-6" /></svg>
             </button>
-            <span className="text-sm font-medium text-[#E8EEFF] min-w-[160px] text-center">{headerLabel}</span>
+            <span className="text-sm font-medium text-[#E8EEFF] min-w-[140px] text-center">{headerLabel}</span>
             <button onClick={() => navigate(1)} className="p-1 text-[#6B8FAA] hover:text-[#E8EEFF] transition-colors">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path d="m15 18-6-6 6-6" /></svg>
             </button>
@@ -240,15 +251,7 @@ export default function CalendarPage() {
       )}
 
       {/* Calendar grid */}
-      {viewMode === "week" && (
-        <div className="p-4 grid grid-cols-7 gap-1.5">
-          {getWeekDays().map((d, i) => (
-            <DayCell key={i} date={d} />
-          ))}
-        </div>
-      )}
-
-      {viewMode === "month" && (
+      {viewMode === "calendar" && (
         <div className="p-4 pb-2">
           <div className="grid grid-cols-7 gap-1 mb-1">
             {DAY_ABBR_HE.map((abbr) => (
@@ -262,6 +265,109 @@ export default function CalendarPage() {
               d ? <DayCell key={i} date={d} compact /> : <div key={i} />
             )}
           </div>
+        </div>
+      )}
+
+      {/* List view */}
+      {viewMode === "list" && (
+        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2 pb-4">
+          {getMonthDates().map((date) => {
+            const key = formatDate(date);
+            const dayShifts = (shiftMap[key] ?? []).filter((s) => s.isWorkDay);
+            const isSat = date.getDay() === 6;
+            const holidayName = holidays[key];
+            const nextKey = formatDate(new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1));
+            const isErevHoliday = !isSat && !holidayName && !!holidays[nextKey];
+            const isHoliday = !!holidayName;
+            const isTodayRow = key === todayStr;
+
+            const dateColor = isSat
+              ? "text-[#FF6B2C]"
+              : isHoliday || isErevHoliday
+              ? "text-purple-400"
+              : "text-[#E8EEFF]";
+
+            const letterColor = isSat
+              ? "text-[#FF6B2C]"
+              : isHoliday || isErevHoliday
+              ? "text-purple-400"
+              : "text-[#6B8FAA]";
+
+            const cardClass = isTodayRow
+              ? "border-[#3B7FF5] border-[1.5px] bg-[#1a2540]"
+              : isSat
+              ? "border border-[rgba(255,107,44,0.2)] bg-[#162038]"
+              : isHoliday || isErevHoliday
+              ? "border border-[rgba(167,139,250,0.2)] bg-[#162038]"
+              : "border border-white/[0.06] bg-[#162038]";
+
+            return (
+              <div key={key} className={`flex items-stretch rounded-xl overflow-hidden ${cardClass}`}>
+                {/* Date column */}
+                <div className="flex flex-col items-center justify-center px-3 py-2 min-w-[44px] gap-0.5">
+                  <span className={`text-xl font-bold leading-none ${dateColor}`}>{date.getDate()}</span>
+                  <span className={`text-[10px] font-medium ${letterColor}`}>{DAY_ABBR_HE[date.getDay()]}</span>
+                </div>
+
+                {/* Vertical divider */}
+                <div className="w-px bg-white/[0.08] my-2" />
+
+                {/* Shifts or empty */}
+                <div className="flex-1 flex flex-col">
+                  {dayShifts.length === 0 ? (
+                    <button
+                      className="flex items-center justify-between px-3 py-3 w-full"
+                      onClick={() => openDay(date)}
+                    >
+                      <span className="text-xs text-[#6B8FAA]/40">{isSat ? "שבת" : "אין משמרת"}</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 text-[#3E5672] flex-shrink-0">
+                        <path d="m15 18-6-6 6-6" />
+                      </svg>
+                    </button>
+                  ) : (
+                    dayShifts.map((shift, idx) => {
+                      const job = jobs.find((j) => j.id === shift.jobId);
+                      if (!job) return null;
+                      const earnings = calcDayEarnings(shift, job, shabbatTimes, holidays);
+                      const hours = calcWorkedHours(shift);
+                      const jobColor = jobColorMap[shift.jobId] ?? "#3B7FF5";
+
+                      return (
+                        <div key={shift.id}>
+                          {idx > 0 && <div className="mx-3 border-t border-dashed border-white/[0.12]" />}
+                          <button
+                            className="w-full text-right flex items-center gap-2 px-3 py-2"
+                            onClick={() => openShift(date, shift.jobId)}
+                          >
+                            <div className="flex-1 flex flex-col gap-0.5">
+                              <span className="text-xs font-semibold" style={{ color: jobColor }}>
+                                {jobNameMap[shift.jobId]}
+                              </span>
+                              <span className="text-[12px] font-semibold text-[#E8EEFF]">
+                                {shift.clockIn} — {shift.clockOut}
+                              </span>
+                              <div className="flex gap-2 text-[10px] text-[#6B8FAA]">
+                                <span>{hours.toFixed(1)} שע׳</span>
+                                {shift.tips ? (
+                                  <span style={{ color: "#2DD4BF" }}>טיפים: ₪{shift.tips}</span>
+                                ) : null}
+                              </div>
+                            </div>
+                            <span className="text-sm font-bold text-[#3B7FF5] min-w-[52px] text-left">
+                              ₪{Math.round(earnings.totalGross)}
+                            </span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 text-[#3E5672] flex-shrink-0">
+                              <path d="m15 18-6-6 6-6" />
+                            </svg>
+                          </button>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
