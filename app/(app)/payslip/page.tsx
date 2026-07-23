@@ -12,6 +12,44 @@ import {
   MONTH_NAMES_HE,
 } from "@/lib/calculations";
 
+function ReadOnlyRow({
+  label,
+  amount,
+  isNegative = false,
+  bold = false,
+  hours,
+}: {
+  label: string;
+  amount: number;
+  isNegative?: boolean;
+  bold?: boolean;
+  hours?: number;
+}) {
+  return (
+    <div
+      className={`flex items-center gap-2 py-2.5 ${bold ? "border-t mt-1 pt-3" : "border-b last:border-0"}`}
+      style={{ borderColor: "rgba(255,255,255,0.08)" }}
+    >
+      <span className={`flex-1 text-sm ${bold ? "font-semibold text-[#E8EEFF]" : "text-[#6B8FAA]"}`}>
+        {label}
+      </span>
+      {hours !== undefined && (
+        <span className="text-sm font-medium text-[#3E5672] w-16 text-left">
+          {hours.toFixed(2)} ש׳
+        </span>
+      )}
+      <span
+        dir="ltr"
+        className={`text-sm font-medium w-24 text-left ${
+          isNegative ? "text-red-400" : bold ? "text-[#3B7FF5] font-bold" : "text-[#E8EEFF]"
+        }`}
+      >
+        {isNegative ? "-" : ""}{formatCurrency(amount).replace("₪", "")}
+      </span>
+    </div>
+  );
+}
+
 export default function PayslipPage() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -117,7 +155,24 @@ export default function PayslipPage() {
 
       {payslip && (
         <div className="p-4 space-y-4">
-          {/* Summary cards */}
+          {/* Hero net card */}
+          <div
+            className="rounded-2xl p-5 text-center border"
+            style={{
+              background: "linear-gradient(135deg, #1a3a6b 0%, #162038 100%)",
+              borderColor: "rgba(59,127,245,0.25)",
+            }}
+          >
+            <div className="text-xs text-[#6B8FAA] mb-2">נטו לתשלום</div>
+            <div className="text-4xl font-extrabold text-green-400" dir="ltr">
+              {formatCurrency(payslip.netPay)}
+            </div>
+            <div className="text-xs text-[#3E5672] mt-2" dir="ltr">
+              מתוך ברוטו {formatCurrency(payslip.grossTotal)}
+            </div>
+          </div>
+
+          {/* Stat chips */}
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-[#162038] rounded-2xl p-3 text-center border" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
               <div className="text-xs text-[#6B8FAA] mb-1">ימי עבודה</div>
@@ -125,76 +180,41 @@ export default function PayslipPage() {
             </div>
             <div className="bg-[#162038] rounded-2xl p-3 text-center border" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
               <div className="text-xs text-[#6B8FAA] mb-1">שעות</div>
-              <div className="text-lg font-bold text-green-400">
-                {payslip.totalHours.toFixed(2)}
-              </div>
+              <div className="text-lg font-bold text-green-400">{payslip.totalHours.toFixed(2)}</div>
             </div>
             <div className="bg-[#162038] rounded-2xl p-3 text-center border" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-              <div className="text-xs text-[#6B8FAA] mb-1">נטו</div>
-              <div className="text-base font-bold text-green-400">{formatCurrency(payslip.netPay)}</div>
+              <div className="text-xs text-[#6B8FAA] mb-1">טיפים</div>
+              <div className={`text-base font-bold ${totalTips > 0 ? "text-amber-400" : "text-[#3E5672]"}`}>
+                {totalTips > 0 ? formatCurrency(totalTips) : "—"}
+              </div>
             </div>
           </div>
 
           {/* Income section */}
           <div className="bg-[#162038] border rounded-2xl px-4 py-1" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
             <h3 className="text-xs font-semibold text-[#3E5672] uppercase tracking-wide pt-3 pb-1">הכנסות</h3>
-            <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-              <span className="flex-1 text-sm text-[#6B8FAA]">שכר בסיס</span>
-              <span className="text-sm font-medium text-[#E8EEFF]">{formatCurrency(payslip.baseSalary)}</span>
-            </div>
+            <ReadOnlyRow label="שכר בסיס" amount={payslip.baseSalary} hours={payslip.totalHours} />
             {payslip.overtime1Pay > 0 && (
-              <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-                <span className="flex-1 text-sm text-[#6B8FAA]">שעות נוספות 125%</span>
-                <span className="text-sm font-medium text-[#E8EEFF]">{formatCurrency(payslip.overtime1Pay)}</span>
-              </div>
+              <ReadOnlyRow label="שעות נוספות 125%" amount={payslip.overtime1Pay} hours={payslip.overtime1Hours} />
             )}
             {payslip.overtime2Pay > 0 && (
-              <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-                <span className="flex-1 text-sm text-[#6B8FAA]">שעות נוספות 150%</span>
-                <span className="text-sm font-medium text-[#E8EEFF]">{formatCurrency(payslip.overtime2Pay)}</span>
-              </div>
+              <ReadOnlyRow label="שעות נוספות 150%" amount={payslip.overtime2Pay} hours={payslip.overtime2Hours} />
             )}
             {payslip.weekendHolidayBonus > 0 && (
-              <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-                <span className="flex-1 text-sm text-[#6B8FAA]">תוספת שבת/חג 150%</span>
-                <span className="text-sm font-medium text-[#E8EEFF]">{formatCurrency(payslip.weekendHolidayBonus)}</span>
-              </div>
+              <ReadOnlyRow label="תוספת שבת/חג 150%" amount={payslip.weekendHolidayBonus} hours={payslip.weekendHours} />
             )}
-            <div className="flex items-center gap-2 py-2.5 last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-              <span className="flex-1 text-sm text-[#6B8FAA]">נסיעות</span>
-              <span className="text-sm font-medium text-[#E8EEFF]">{formatCurrency(payslip.commuteTotal)}</span>
-            </div>
-          </div>
-
-          {/* Gross total card */}
-          <div className="bg-orange-500 rounded-2xl px-4 py-4">
-            <div className="flex items-center justify-between">
-              <span className="text-white font-semibold text-base">ברוטו</span>
-              <span className="text-white font-bold text-xl">{formatCurrency(payslip.grossTotal)}</span>
-            </div>
+            <ReadOnlyRow label="נסיעות" amount={payslip.commuteTotal} />
           </div>
 
           {/* Deductions section */}
           <div className="bg-[#162038] border rounded-2xl px-4 py-1" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
             <h3 className="text-xs font-semibold text-[#3E5672] uppercase tracking-wide pt-3 pb-1">ניכויים</h3>
             {selectedJob?.pensionEnabled && (
-              <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-                <span className="flex-1 text-sm text-[#6B8FAA]">פנסיה (עובד)</span>
-                <span className="text-sm font-medium text-red-400">-{formatCurrency(payslip.pensionEmployee)}</span>
-              </div>
+              <ReadOnlyRow label="פנסיה (עובד)" amount={payslip.pensionEmployee} isNegative />
             )}
-            <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-              <span className="flex-1 text-sm text-[#6B8FAA]">ביטוח לאומי</span>
-              <span className="text-sm font-medium text-red-400">-{formatCurrency(payslip.nationalInsurance)}</span>
-            </div>
-            <div className="flex items-center gap-2 py-2.5 border-b last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-              <span className="flex-1 text-sm text-[#6B8FAA]">ביטוח בריאות</span>
-              <span className="text-sm font-medium text-red-400">-{formatCurrency(payslip.healthInsurance)}</span>
-            </div>
-            <div className="flex items-center gap-2 py-2.5 last:border-0" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-              <span className="flex-1 text-sm text-[#6B8FAA]">מס הכנסה</span>
-              <span className="text-sm font-medium text-red-400">-{formatCurrency(payslip.incomeTax)}</span>
-            </div>
+            <ReadOnlyRow label="ביטוח לאומי" amount={payslip.nationalInsurance} isNegative />
+            <ReadOnlyRow label="ביטוח בריאות" amount={payslip.healthInsurance} isNegative />
+            <ReadOnlyRow label="מס הכנסה" amount={payslip.incomeTax} isNegative />
           </div>
 
           {/* Net */}
