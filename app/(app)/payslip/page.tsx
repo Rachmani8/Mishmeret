@@ -21,7 +21,7 @@ function ReadOnlyRow({
   label: string;
   amount: number;
   isNegative?: boolean;
-  hours?: number;
+  hours?: string;
 }) {
   return (
     <div
@@ -32,17 +32,17 @@ function ReadOnlyRow({
         {label}
       </span>
       {hours !== undefined && (
-        <span className="text-sm font-medium text-[#3E5672] w-16 text-left">
-          {hours.toFixed(2)} ש׳
+        <span dir="ltr" className="text-sm font-medium text-[#6B8FAA] w-20 text-center">
+          {hours}
         </span>
       )}
       <span
         dir="ltr"
-        className={`text-sm font-medium w-24 text-left ${
-          isNegative ? "text-red-400" : "text-[#E8EEFF]"
+        className={`text-sm font-medium flex-1 text-left ${
+          "text-[#E8EEFF]"
         }`}
       >
-        {isNegative ? "-" : ""}{formatCurrency(amount).replace("₪", "")}
+        {isNegative ? "− " : ""}{formatCurrency(amount).replace("₪", "")}
       </span>
     </div>
   );
@@ -161,12 +161,12 @@ export default function PayslipPage() {
               borderColor: "rgba(59,127,245,0.25)",
             }}
           >
-            <div className="text-xs text-[#6B8FAA] mb-2">נטו לתשלום</div>
-            <div className="text-4xl font-extrabold text-green-400" dir="ltr">
+            <div className="text-sm font-semibold text-[#C8D8F0] mb-2">נטו לתשלום</div>
+            <div className="text-3xl font-extrabold text-green-400" dir="ltr">
               {formatCurrency(payslip.netPay)}
             </div>
-            <div className="text-xs text-[#3E5672] mt-2" dir="ltr">
-              מתוך ברוטו {formatCurrency(payslip.grossTotal)}
+            <div className="text-sm font-medium text-[#8AACC8] mt-3" dir="ltr">
+              מתוך ברוטו <span className="text-[#3B7FF5] font-bold">{formatCurrency(payslip.grossTotal)}</span>
             </div>
           </div>
 
@@ -178,11 +178,11 @@ export default function PayslipPage() {
             </div>
             <div className="bg-[#162038] rounded-2xl p-3 text-center border" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
               <div className="text-xs text-[#6B8FAA] mb-1">שעות</div>
-              <div className="text-lg font-bold text-green-400">{payslip.totalHours.toFixed(2)}</div>
+              <div className="text-lg font-bold text-[#3B7FF5]">{payslip.totalHours.toFixed(2)}</div>
             </div>
             <div className="bg-[#162038] rounded-2xl p-3 text-center border" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
               <div className="text-xs text-[#6B8FAA] mb-1">טיפים</div>
-              <div className={`text-base font-bold ${totalTips > 0 ? "text-amber-400" : "text-[#3E5672]"}`}>
+              <div className={`text-base font-bold ${totalTips > 0 ? "text-[#3B7FF5]" : "text-[#3E5672]"}`}>
                 {totalTips > 0 ? formatCurrency(totalTips) : "—"}
               </div>
             </div>
@@ -190,41 +190,60 @@ export default function PayslipPage() {
 
           {/* Income section */}
           <div className="bg-[#162038] border rounded-2xl px-4 py-1" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
-            <h3 className="text-xs font-semibold text-[#3E5672] uppercase tracking-wide pt-3 pb-1">הכנסות</h3>
-            <ReadOnlyRow label="שכר בסיס" amount={payslip.baseSalary} hours={payslip.totalHours} />
+            {/* Column headers */}
+            <div className="flex items-center gap-2 pt-3 pb-2 border-b" style={{ borderColor: "rgba(255,255,255,0.10)" }}>
+              <span className="flex-1 text-xs font-bold text-[#C8D8F0]">תאור תשלום</span>
+              <span className="w-20 text-xs font-bold text-[#C8D8F0] text-center">כמות</span>
+              <span className="flex-1 text-xs font-bold text-[#C8D8F0] text-left" dir="ltr">לתשלום</span>
+            </div>
+            <ReadOnlyRow label="שכר בסיס" amount={payslip.baseSalary} hours={payslip.totalHours.toFixed(2)} />
             {payslip.overtime1Pay > 0 && (
-              <ReadOnlyRow label="שעות נוספות 125%" amount={payslip.overtime1Pay} hours={payslip.overtime1Hours} />
+              <ReadOnlyRow label="שעות נוספות 125%" amount={payslip.overtime1Pay} hours={payslip.overtime1Hours.toFixed(2)} />
             )}
             {payslip.overtime2Pay > 0 && (
-              <ReadOnlyRow label="שעות נוספות 150%" amount={payslip.overtime2Pay} hours={payslip.overtime2Hours} />
+              <ReadOnlyRow label="שעות נוספות 150%" amount={payslip.overtime2Pay} hours={payslip.overtime2Hours.toFixed(2)} />
             )}
             {payslip.weekendHolidayBonus > 0 && (
-              <ReadOnlyRow label="תוספת שבת/חג 150%" amount={payslip.weekendHolidayBonus} hours={payslip.weekendHours} />
+              <ReadOnlyRow label="תוספת שבת/חג 150%" amount={payslip.weekendHolidayBonus} hours={payslip.weekendHours.toFixed(2)} />
             )}
-            <ReadOnlyRow label="נסיעות" amount={payslip.commuteTotal} />
+            <ReadOnlyRow label="נסיעות" amount={payslip.commuteTotal} hours={String(payslip.workDays)} />
+            {/* Total income */}
+            <div className="flex items-center gap-2 py-2.5 border-t mt-1" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
+              <span className="flex-1 text-sm font-extrabold text-[#C8D8F0]">סה״כ</span>
+              <span className="w-20 text-sm font-medium text-[#6B8FAA] text-center" />
+              <span dir="ltr" className="flex-1 text-sm font-extrabold text-green-400 text-left">
+                {formatCurrency(payslip.grossTotal).replace("₪", "")}
+              </span>
+            </div>
           </div>
 
           {/* Deductions section */}
           <div className="bg-[#162038] border rounded-2xl px-4 py-1" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
-            <h3 className="text-xs font-semibold text-[#3E5672] uppercase tracking-wide pt-3 pb-1">ניכויים</h3>
+            {/* Column headers */}
+            <div className="flex items-center gap-2 pt-3 pb-2 border-b" style={{ borderColor: "rgba(255,255,255,0.10)" }}>
+              <span className="flex-1 text-xs font-bold text-[#C8D8F0]">ניכויי חובה</span>
+              <span className="flex-1 text-xs font-bold text-[#C8D8F0] text-left" dir="ltr">הסכום לניכוי</span>
+            </div>
             {selectedJob?.pensionEnabled && (
               <ReadOnlyRow label="פנסיה (עובד)" amount={payslip.pensionEmployee} isNegative />
             )}
             <ReadOnlyRow label="ביטוח לאומי" amount={payslip.nationalInsurance} isNegative />
             <ReadOnlyRow label="ביטוח בריאות" amount={payslip.healthInsurance} isNegative />
             <ReadOnlyRow label="מס הכנסה" amount={payslip.incomeTax} isNegative />
+            {/* Total deductions */}
+            <div className="flex items-center gap-2 py-2.5 border-t mt-1" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
+              <span className="flex-1 text-sm font-extrabold text-[#C8D8F0]">סה״כ</span>
+              <span dir="ltr" className="flex-1 text-sm font-extrabold text-red-400 text-left">
+                − {formatCurrency(
+                  (selectedJob?.pensionEnabled ? payslip.pensionEmployee : 0) +
+                  payslip.nationalInsurance +
+                  payslip.healthInsurance +
+                  payslip.incomeTax
+                ).replace("₪", "")}
+              </span>
+            </div>
           </div>
 
-          {/* Tips */}
-          {totalTips > 0 && (
-            <div className="bg-amber-900/20 border border-amber-700/30 rounded-2xl px-4 py-4 flex items-center justify-between">
-              <div>
-                <span className="text-amber-300 font-semibold text-base">טיפים החודש</span>
-                <p className="text-xs text-amber-500/80 mt-0.5">מזומן שהתקבל ישירות — לא נכלל בשכר</p>
-              </div>
-              <span className="text-amber-300 font-bold text-xl">{formatCurrency(totalTips)}</span>
-            </div>
-          )}
         </div>
       )}
 

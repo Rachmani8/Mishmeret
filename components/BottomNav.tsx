@@ -67,9 +67,6 @@ export default function BottomNav() {
               } ${i > 0 ? "border-r" : ""}`}
               style={i > 0 ? { borderColor: "rgba(255,255,255,0.08)" } : undefined}
             >
-              {active && (
-                <span className="absolute top-0 left-0 right-0 h-[2px] bg-[#3B7FF5]" />
-              )}
               <span>{tab.icon}</span>
               <span>{tab.label}</span>
             </Link>
