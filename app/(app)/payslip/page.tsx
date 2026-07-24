@@ -182,7 +182,7 @@ export default function PayslipPage() {
             </div>
             <div className="bg-[#162038] rounded-2xl p-3 text-center border" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
               <div className="text-xs text-[#6B8FAA] mb-1">טיפים</div>
-              <div className={`text-base font-bold ${totalTips > 0 ? "text-[#3B7FF5]" : "text-[#3E5672]"}`}>
+              <div className={`text-base font-bold ${totalTips > 0 ? "text-[#FCD34D]" : "text-[#3E5672]"}`}>
                 {totalTips > 0 ? formatCurrency(totalTips) : "—"}
               </div>
             </div>
