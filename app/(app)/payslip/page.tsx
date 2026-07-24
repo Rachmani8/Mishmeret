@@ -196,17 +196,19 @@ export default function PayslipPage() {
               <span className="w-20 text-xs font-bold text-[#C8D8F0] text-center">כמות</span>
               <span className="flex-1 text-xs font-bold text-[#C8D8F0] text-left" dir="ltr">לתשלום</span>
             </div>
-            <ReadOnlyRow label="שכר בסיס" amount={payslip.baseSalary} hours={payslip.totalHours.toFixed(2)} />
-            {payslip.overtime1Pay > 0 && (
-              <ReadOnlyRow label="שעות נוספות 125%" amount={payslip.overtime1Pay} hours={payslip.overtime1Hours.toFixed(2)} />
-            )}
-            {payslip.overtime2Pay > 0 && (
-              <ReadOnlyRow label="שעות נוספות 150%" amount={payslip.overtime2Pay} hours={payslip.overtime2Hours.toFixed(2)} />
-            )}
-            {payslip.weekendHolidayBonus > 0 && (
-              <ReadOnlyRow label="תוספת שבת/חג 150%" amount={payslip.weekendHolidayBonus} hours={payslip.weekendHours.toFixed(2)} />
-            )}
-            <ReadOnlyRow label="נסיעות" amount={payslip.commuteTotal} hours={String(payslip.workDays)} />
+            <div>
+              <ReadOnlyRow label="שכר בסיס" amount={payslip.baseSalary} hours={payslip.totalHours.toFixed(2)} />
+              {payslip.overtime1Pay > 0 && (
+                <ReadOnlyRow label="שעות נוספות 125%" amount={payslip.overtime1Pay} hours={payslip.overtime1Hours.toFixed(2)} />
+              )}
+              {payslip.overtime2Pay > 0 && (
+                <ReadOnlyRow label="שעות נוספות 150%" amount={payslip.overtime2Pay} hours={payslip.overtime2Hours.toFixed(2)} />
+              )}
+              {payslip.weekendHolidayBonus > 0 && (
+                <ReadOnlyRow label="תוספת שבת/חג 150%" amount={payslip.weekendHolidayBonus} hours={payslip.weekendHours.toFixed(2)} />
+              )}
+              <ReadOnlyRow label="נסיעות" amount={payslip.commuteTotal} hours={String(payslip.workDays)} />
+            </div>
             {/* Total income */}
             <div className="flex items-center gap-2 py-2.5 border-t border-dashed mt-1" style={{ borderColor: "rgba(255,255,255,0.18)" }}>
               <span className="flex-1 text-sm font-extrabold text-[#C8D8F0]">סה״כ</span>
@@ -224,12 +226,14 @@ export default function PayslipPage() {
               <span className="flex-1 text-xs font-bold text-[#C8D8F0]">ניכויי חובה</span>
               <span className="flex-1 text-xs font-bold text-[#C8D8F0] text-left" dir="ltr">הסכום לניכוי</span>
             </div>
-            {selectedJob?.pensionEnabled && (
-              <ReadOnlyRow label="פנסיה (עובד)" amount={payslip.pensionEmployee} isNegative />
-            )}
-            <ReadOnlyRow label="ביטוח לאומי" amount={payslip.nationalInsurance} isNegative />
-            <ReadOnlyRow label="ביטוח בריאות" amount={payslip.healthInsurance} isNegative />
-            <ReadOnlyRow label="מס הכנסה" amount={payslip.incomeTax} isNegative />
+            <div>
+              {selectedJob?.pensionEnabled && (
+                <ReadOnlyRow label="פנסיה (עובד)" amount={payslip.pensionEmployee} isNegative />
+              )}
+              <ReadOnlyRow label="ביטוח לאומי" amount={payslip.nationalInsurance} isNegative />
+              <ReadOnlyRow label="ביטוח בריאות" amount={payslip.healthInsurance} isNegative />
+              <ReadOnlyRow label="מס הכנסה" amount={payslip.incomeTax} isNegative />
+            </div>
             {/* Total deductions */}
             <div className="flex items-center gap-2 py-2.5 border-t border-dashed mt-1" style={{ borderColor: "rgba(255,255,255,0.18)" }}>
               <span className="flex-1 text-sm font-extrabold text-[#C8D8F0]">סה״כ</span>
