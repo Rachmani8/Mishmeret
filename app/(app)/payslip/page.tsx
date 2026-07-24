@@ -208,10 +208,10 @@ export default function PayslipPage() {
             )}
             <ReadOnlyRow label="נסיעות" amount={payslip.commuteTotal} hours={String(payslip.workDays)} />
             {/* Total income */}
-            <div className="flex items-center gap-2 py-2.5 border-t mt-1" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
+            <div className="flex items-center gap-2 py-2.5 border-t border-dashed mt-1" style={{ borderColor: "rgba(255,255,255,0.18)" }}>
               <span className="flex-1 text-sm font-extrabold text-[#C8D8F0]">סה״כ</span>
               <span className="w-20 text-sm font-medium text-[#6B8FAA] text-center" />
-              <span dir="ltr" className="flex-1 text-sm font-extrabold text-green-400 text-left">
+              <span dir="ltr" className="flex-1 text-sm font-extrabold text-[#3B7FF5] text-left">
                 {formatCurrency(payslip.grossTotal).replace("₪", "")}
               </span>
             </div>
@@ -231,7 +231,7 @@ export default function PayslipPage() {
             <ReadOnlyRow label="ביטוח בריאות" amount={payslip.healthInsurance} isNegative />
             <ReadOnlyRow label="מס הכנסה" amount={payslip.incomeTax} isNegative />
             {/* Total deductions */}
-            <div className="flex items-center gap-2 py-2.5 border-t mt-1" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
+            <div className="flex items-center gap-2 py-2.5 border-t border-dashed mt-1" style={{ borderColor: "rgba(255,255,255,0.18)" }}>
               <span className="flex-1 text-sm font-extrabold text-[#C8D8F0]">סה״כ</span>
               <span dir="ltr" className="flex-1 text-sm font-extrabold text-red-400 text-left">
                 − {formatCurrency(
