@@ -19,7 +19,7 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(today);
   const holidays = useHolidayTimes(currentDate.getFullYear());
   const shabbatTimes = useShabbatTimes(currentDate.getFullYear());
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<Job[] | null>(null);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedDateHoliday, setSelectedDateHoliday] = useState<string | undefined>(undefined);
@@ -46,8 +46,8 @@ export default function CalendarPage() {
     (acc[s.date] ??= []).push(s);
     return acc;
   }, {});
-  const jobColorMap = Object.fromEntries(jobs.map((j, i) => [j.id, j.color ?? JOB_COLORS[i % JOB_COLORS.length]]));
-  const jobNameMap = Object.fromEntries(jobs.map((j) => [j.id, j.name]));
+  const jobColorMap = Object.fromEntries((jobs ?? []).map((j, i) => [j.id, j.color ?? JOB_COLORS[i % JOB_COLORS.length]]));
+  const jobNameMap = Object.fromEntries((jobs ?? []).map((j) => [j.id, j.name]));
 
   const getMonthDays = () => {
     const year = currentDate.getFullYear();
@@ -84,7 +84,7 @@ export default function CalendarPage() {
   };
 
   const openShift = (date: Date, jobId: string) => {
-    const job = jobs.find((j) => j.id === jobId) ?? selectedJob;
+    const job = (jobs ?? []).find((j) => j.id === jobId) ?? selectedJob;
     if (!job) return;
     const key = formatDate(date);
     const isSat = date.getDay() === 6;
@@ -241,7 +241,7 @@ export default function CalendarPage() {
       </div>
 
       {/* No job banner */}
-      {jobs.length === 0 && (
+      {jobs !== null && jobs.length === 0 && (
         <div className="mx-4 mt-3 px-4 py-3 bg-amber-900/20 border border-amber-700/30 rounded-2xl flex items-center justify-between gap-3">
           <p className="text-sm text-amber-300">לא הוגדרה משרה — לא ניתן לפתוח ימים</p>
           <a href="/settings" className="text-xs font-semibold text-amber-400 underline whitespace-nowrap">הגדר/י משרה</a>
@@ -324,7 +324,7 @@ export default function CalendarPage() {
                     </button>
                   ) : (
                     dayShifts.map((shift, idx) => {
-                      const job = jobs.find((j) => j.id === shift.jobId);
+                      const job = (jobs ?? []).find((j) => j.id === shift.jobId);
                       if (!job) return null;
                       const earnings = calcDayEarnings(shift, job, shabbatTimes, holidays);
                       const hours = calcWorkedHours(shift);
@@ -372,7 +372,7 @@ export default function CalendarPage() {
       <ShiftDrawer
         date={selectedDate}
         job={selectedJob}
-        jobs={jobs}
+        jobs={jobs ?? []}
         holidayLabel={selectedDateHoliday}
         onClose={() => { setSelectedDate(null); setSelectedDateHoliday(undefined); loadShifts(currentDate); }}
         onSave={handleSave}
