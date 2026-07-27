@@ -134,7 +134,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
           {renderField(taxField)}
           <div className="px-4 py-3 border-b" style={{ background: "#111C32", borderColor: "rgba(255,255,255,0.08)" }}>
             <p className="text-xs text-[#6B8FAA] leading-relaxed">
-              לא יודע/ת כמה נקודות זיכוי יש לך? ניתן לבדוק בתלוש השכר האחרון שלך.
+              רוצים לבדוק כמה נקודות זיכוי מגיעות לכם? ניתן לבדוק בתלוש השכר האחרון.
             </p>
             <a
               href="https://secapp.taxes.gov.il/srsimulatorNZ/#/simulator"
@@ -143,7 +143,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
               className="inline-block mt-2 text-xs font-medium text-[#3B7FF5] underline underline-offset-2"
               onClick={(e) => e.stopPropagation()}
             >
-              סימולטור נקודות זיכוי — רשות המסים ←
+              🔗 סימולטור נקודות זיכוי
             </a>
           </div>
         </>
@@ -164,7 +164,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
           {renderField(commuteSubField)}
           <div className="px-4 py-3 border-b" style={{ background: "#111C32", borderColor: "rgba(255,255,255,0.08)" }}>
             <p className="text-xs text-[#6B8FAA] leading-relaxed">
-              על פי חוק, המעסיק חייב לשלם החזר נסיעות בגובה עלות התחבורה הציבורית הזולה ביותר. הסכום המקסימלי: ₪22.60 ליום.
+              לפי העלות בפועל של התחבורה הציבורית (הזולה ביותר הנדרשת להגעה לעבודה), ובלבד שאינה עולה על תקרה מקסימלית של ₪22.60 ליום עבודה.
             </p>
           </div>
         </>
@@ -185,7 +185,7 @@ function JobForm({ job, onSave, onDelete }: { job: Job; onSave: (j: Job) => void
           {pensionSubFields.map(renderField)}
           <div className="px-4 py-3 border-b" style={{ background: "#111C32", borderColor: "rgba(255,255,255,0.08)" }}>
             <p className="text-xs text-[#6B8FAA] leading-relaxed">
-              פנסיה חובה חלה על כל עובד/ת שכיר/ה. סה״כ 18.5% מהשכר: 6% עובד, 6.5% תגמולים + 6% פיצויים ממעסיק.
+              פנסיה חובה על כל העובדים השכירים. סה״כ 18.5% מהשכר — המעסיק משלם 12.5%, העובד/ת 6%.
             </p>
           </div>
         </>
